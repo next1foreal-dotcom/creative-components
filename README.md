@@ -13,4 +13,8 @@ New components land here as they're made.
 
 Made by [@nextoneforeal](https://x.com/nextoneforeal) · [heynext1.com](https://heynext1.com)
 
-MIT License
+## License
+
+Free for non-commercial use under the [PolyForm Noncommercial License 1.0.0](./LICENSE). Keep the credit line when you share them.
+
+**Commercial use needs permission.** Reach out on X [@nextoneforeal](https://x.com/nextoneforeal). See [COMMERCIAL.md](./COMMERCIAL.md).

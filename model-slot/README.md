@@ -57,3 +57,7 @@ Imperative: `ref.current.spin({ to: 'claude-opus' })`, `ref.current.step(1)`.
 - `model-slot-cabinet.css`
 - `demo.html`: offline demo. Use `?mode=hero` for the large size and `?mode=chips` for all five models in composers
 - `media/`: showcase video and poster
+
+## License
+
+Free for non-commercial use ([PolyForm Noncommercial 1.0.0](../LICENSE)). Commercial use needs permission, see [COMMERCIAL.md](../COMMERCIAL.md).

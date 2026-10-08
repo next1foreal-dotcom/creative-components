@@ -126,3 +126,7 @@ It never fights the spring engine. The gag is only an **offset added to the zomb
 
 - Zombie: redrawn after "Plants Vs Zombies" line art by SVG Repo, CC0 (https://www.svgrepo.com/svg/518723/plants-vs-zombies)
 - Brain line art: "Brain Illustration 1" by SVG Repo, CC0 (https://www.svgrepo.com/svg/482775/brain-illustration-1)
+
+## License
+
+Free for non-commercial use ([PolyForm Noncommercial 1.0.0](../LICENSE)). Commercial use needs permission, see [COMMERCIAL.md](../COMMERCIAL.md).
