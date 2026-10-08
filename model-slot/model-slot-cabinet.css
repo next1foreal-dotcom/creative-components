@@ -1,0 +1,154 @@
+/* ModelSlotCabinet — miniature slot machine model picker.
+   Sizes are calc(var(--u)*n) where n = lg-units. --u is 3px for size="lg".
+   The base rules describe the full 153x48 cabinet (size="lg", x3). The compact default (data-size="sm", --u:1px)
+   is a separate simplified drawing; its overrides live in the "compact" block at the end. */
+.msc{
+  position:relative; display:inline-block; width:calc(var(--u)*153); height:calc(var(--u)*48); vertical-align:middle; flex:0 0 auto;
+  isolation:isolate; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
+  font:700 calc(var(--u)*10.5)/1 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.02em;
+}
+.msc:not(.has-lever){width:calc(var(--u)*141)}
+.msc-cab{position:absolute;inset:0;transform-origin:50% 100%}
+.msc-art,.msc-front{position:absolute;left:calc(var(--u)*-1);top:calc(var(--u)*-8);width:calc(var(--u)*155);height:calc(var(--u)*62);overflow:visible;pointer-events:none;display:block}
+.msc-art{z-index:0}
+.msc-front{z-index:4}
+
+/* ---- reel window */
+.msc-reel{position:absolute;left:calc(var(--u)*14);top:calc(var(--u)*17);width:calc(var(--u)*112);height:calc(var(--u)*24);border-radius:calc(var(--u)*2);outline:none;touch-action:none;cursor:ns-resize;z-index:1;overflow:hidden;background:#0d0d10}
+.msc-win{position:absolute;inset:0;overflow:hidden}
+.msc-strip,.msc-layer{position:absolute;inset:0}
+.msc-item{position:absolute;left:0;right:0;top:0;height:calc(var(--u)*24);will-change:transform;transform-origin:50% 50%}
+.msc-echo{pointer-events:none}
+.msc-face{
+  display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*3.5);height:calc(var(--u)*24);box-sizing:border-box;padding:0 calc(var(--u)*3) 0 calc(var(--u)*1.5);white-space:nowrap;
+  background:var(--fbg);color:var(--ffg);position:relative;overflow:hidden;
+  box-shadow:inset 0 calc(var(--u)*.6) 0 rgba(0,0,0,.16), inset 0 calc(var(--u)*-.6) 0 rgba(0,0,0,.16);
+}
+.msc-echo .msc-face{background:none;box-shadow:none}
+.msc-echo .msc-face::before,.msc-echo .msc-face::after{display:none}
+.msc-logo{display:block;flex:0 0 auto;image-rendering:pixelated;shape-rendering:crispEdges}
+.msc-face .msc-logo-lg{margin:calc(var(--u)*-.6667)}
+.msc-name{display:block;transform:translateY(calc(var(--u)*-.4))}
+/* reel symbols: each model has its own strip colour */
+.msc-item[data-face="deepseek"]{--fbg:linear-gradient(180deg,#f1f4ff,#dfe6fb);--ffg:#1b2a78}
+.msc-item[data-face="sonnet"]{--fbg:linear-gradient(180deg,#fbf4e3,#efe2c4);--ffg:#4a2c1a}
+.msc-item[data-face="opus"]{--fbg:linear-gradient(180deg,#323845,#1b1e25);--ffg:#f0cf7c}
+.msc-item[data-face="opus"] .msc-face::before,.msc-item[data-face="opus"] .msc-face::after{content:"";position:absolute;left:0;right:0;height:calc(var(--u)*.7);background:linear-gradient(90deg,#8a6420,#f6d77e 50%,#8a6420)}
+.msc-item[data-face="opus"] .msc-face::before{top:calc(var(--u)*2.2)}
+.msc-item[data-face="opus"] .msc-face::after{bottom:calc(var(--u)*2.2)}
+.msc-item[data-face="opus"] .msc-name{background:linear-gradient(180deg,#fff1bf,#f2c55a 55%,#c98f22);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 calc(var(--u)*.6) 0 rgba(0,0,0,.6))}
+.msc-item[data-face="sol"]{--fbg:linear-gradient(180deg,#ffffff,#eeeeee);--ffg:#0d0d0d;color:#0d0d0d}
+.msc-item[data-face="astra"]{--fbg:radial-gradient(120% 140% at 50% 50%,#141a2e 0,#05060a 60%);--ffg:#fff}
+.msc-item[data-face="astra"] .msc-logo{color:#fff;filter:drop-shadow(0 0 calc(var(--u)*1.2) rgba(200,230,255,.95)) drop-shadow(0 0 calc(var(--u)*3.5) rgba(120,180,255,.75))}
+.msc-item[data-face="astra"] .msc-name{text-shadow:0 0 calc(var(--u)*5) rgba(150,200,255,.85)}
+.msc-item[data-face="astra"] .msc-face::before{content:"";position:absolute;width:calc(var(--u)*1);height:calc(var(--u)*1);left:0;top:0;border-radius:50%;background:transparent;
+  box-shadow:calc(var(--u)*8) calc(var(--u)*5) 0 rgba(255,255,255,.8),calc(var(--u)*19) calc(var(--u)*18) 0 rgba(200,225,255,.6),calc(var(--u)*93) calc(var(--u)*4) 0 rgba(255,255,255,.65),calc(var(--u)*104) calc(var(--u)*17) 0 rgba(255,255,255,.55),calc(var(--u)*99) calc(var(--u)*11) 0 rgba(170,205,255,.5)}
+
+/* glass: curved drum shading (dark at top/bottom), inner shadow, glare streak */
+.msc-glass{position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,0) 14%,rgba(255,255,255,.24) 17%,rgba(255,255,255,.08) 23%,rgba(255,255,255,0) 26%),
+    linear-gradient(180deg,rgba(255,255,255,.3) 0,rgba(255,255,255,0) 14%),
+    linear-gradient(180deg,rgba(0,0,0,.62) 0,rgba(0,0,0,.18) 22%,rgba(0,0,0,0) 38%,rgba(0,0,0,0) 62%,rgba(0,0,0,.2) 78%,rgba(0,0,0,.66) 100%);
+  box-shadow:inset 0 calc(var(--u)*1) calc(var(--u)*1.5) rgba(0,0,0,.55), inset 0 0 0 calc(var(--u)*.5) rgba(0,0,0,.6)}
+.msc-defs{position:absolute;width:0;height:0;overflow:hidden}
+.msc-flash{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;
+  background:radial-gradient(70% 120% at 50% 50%,#fffbe0 0,#ffd75e 45%,rgba(242,181,31,.85) 100%)}
+
+/* ding: the logo knocks once when the reel stops */
+.msc.is-ding .msc-main .msc-logo{animation:msc-knock .24s cubic-bezier(.3,1.6,.5,1)}
+@keyframes msc-knock{0%{transform:scale(1,1)}35%{transform:scale(1.14,.86)}100%{transform:scale(1,1)}}
+
+/* ---- marquee bulbs */
+.msc-lit,.msc-gold,.msc-star{opacity:0}
+.msc[data-lights="idle"] .msc-lit{animation:msc-chase 2.1s linear infinite;animation-delay:calc(var(--k) * -.7s)}
+.msc[data-lights="spin"] .msc-lit{animation:msc-chase .33s linear infinite;animation-delay:calc(var(--k) * -.11s)}
+.msc[data-lights="win"] .msc-gold{animation:msc-strobe .16s linear infinite;animation-delay:calc(var(--p) * -.08s)}
+.msc[data-lights="win"][data-jp="star"] .msc-gold{animation:none}
+.msc[data-lights="win"][data-jp="star"] .msc-star{animation:msc-twinkle .42s ease-in-out infinite;animation-delay:calc(var(--k) * -.14s + var(--p) * -.07s)}
+.msc[data-lights="win"][data-jp="star"] .msc-art{animation-name:msc-glow-star}
+.msc[data-lights="win"] .msc-art{animation:msc-glow .32s ease-in-out infinite alternate}
+.msc[data-lights="win"] .msc-plate-bg{animation:msc-platebg .16s steps(1) infinite}
+.msc[data-lights="blink"] .msc-lit{animation:msc-blink .5s linear 1}
+@keyframes msc-chase{0%,32%{opacity:1}34%,98%{opacity:.08}100%{opacity:1}}
+@keyframes msc-strobe{0%,48%{opacity:1}52%,100%{opacity:.45}}
+@keyframes msc-twinkle{0%,100%{opacity:.35}30%{opacity:1}45%{opacity:.6}60%{opacity:1}}
+@keyframes msc-glow-star{0%{filter:drop-shadow(0 0 calc(var(--u)*2) rgba(170,210,255,.55))}100%{filter:drop-shadow(0 0 calc(var(--u)*6) rgba(120,180,255,.95))}}
+@keyframes msc-glow{0%{filter:drop-shadow(0 0 calc(var(--u)*2) rgba(255,200,70,.55))}100%{filter:drop-shadow(0 0 calc(var(--u)*6) rgba(255,190,50,.95))}}
+@keyframes msc-platebg{0%{fill:#ffd84a}50%{fill:#b3101d}}
+@keyframes msc-platebg-star{0%{fill:#d6ebff}50%{fill:#0b1638}}
+.msc[data-lights="win"][data-jp="star"] .msc-plate-bg{animation-name:msc-platebg-star}
+.msc[data-lights="win"][data-jp="star"] .msc-plate-txt{animation-name:msc-plate-star}
+@keyframes msc-blink{0%,28%{opacity:1}32%,50%{opacity:.15}54%,86%{opacity:1}100%{opacity:.1}}
+
+/* ---- lever hit area (the drawing lives in .msc-front) */
+.msc-lever{position:absolute;left:calc(var(--u)*139);top:calc(var(--u)*-7);width:calc(var(--u)*16);height:calc(var(--u)*42);padding:0;margin:0;border:0;background:none;cursor:grab;outline:none;z-index:6;touch-action:none;border-radius:calc(var(--u)*6)}
+.msc-lever:active{cursor:grabbing}
+
+/* ---- jackpot */
+.msc.is-jackpot .msc-cab{animation:msc-shake .62s cubic-bezier(.36,.07,.19,.97)}
+.msc.is-jackpot .msc-flash{animation:msc-flash 1s linear}
+.msc[data-lights="win"] .msc-plate-txt{animation:msc-plate .16s steps(1) infinite}
+@keyframes msc-shake{
+  0%{transform:translate(0,0) rotate(0)}10%{transform:translate(calc(var(--u)*-1.4),calc(var(--u)*-.4)) rotate(-1.2deg)}22%{transform:translate(calc(var(--u)*1.4),0) rotate(1.1deg)}
+  34%{transform:translate(calc(var(--u)*-1.1),calc(var(--u)*-.3)) rotate(-.8deg)}46%{transform:translate(calc(var(--u)*1),0) rotate(.7deg)}58%{transform:translate(calc(var(--u)*-.6),0) rotate(-.4deg)}
+  72%{transform:translate(calc(var(--u)*.4),0) rotate(.2deg)}100%{transform:translate(0,0) rotate(0)}}
+@keyframes msc-flash{0%{opacity:0}6%{opacity:.95}20%{opacity:.25}30%{opacity:.75}46%{opacity:0}56%{opacity:.35}70%,100%{opacity:0}}
+@keyframes msc-plate{0%{fill:#7a0010}50%{fill:#fff3b0}}
+@keyframes msc-plate-star{0%{fill:#16306e}50%{fill:#ffffff}}
+.msc[data-jp="star"] .msc-flash{background:radial-gradient(70% 120% at 50% 50%,#ffffff 0,#cfe6ff 45%,rgba(90,150,255,.85) 100%)}
+
+.msc-fx{position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:3}
+.msc-coin,.msc-spark{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity;line-height:0}
+.msc-coin svg,.msc-spark svg{display:block;image-rendering:pixelated}
+.msc-coin .msc-c-gold,.msc-coin .msc-c-star{display:block}
+.msc-spark{z-index:1}
+
+/* coin / sparkle theme: gold for Opus, silver star-coins + blue-white sparkles for Astra */
+.msc[data-jp="star"] .msc-coin .msc-c-gold,.msc:not([data-jp="star"]) .msc-coin .msc-c-star{display:none}
+.msc-spark svg+svg{display:none}
+.msc[data-jp="star"] .msc-spark svg{display:none}
+.msc[data-jp="star"] .msc-spark svg+svg{display:block}
+.msc-tray-in{transform:scaleY(0);transform-box:fill-box;transform-origin:50% 0}
+
+/* ---- states */
+.msc:has(.msc-reel:focus-visible) .msc-reel{outline:calc(var(--u)*1.5) solid #6b5cff;outline-offset:calc(var(--u)*2.5)}
+.msc.is-disabled{opacity:.5;filter:saturate(.4)}
+.msc.is-disabled .msc-reel,.msc.is-disabled .msc-lever{cursor:default}
+.msc-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0}
+
+/* ================= compact (default size): ~120x36 CSS px ================= */
+.msc[data-size="sm"]{width:120px;height:36px;font-size:10px;letter-spacing:-.01em}
+.msc[data-size="sm"]:not(.has-lever){width:109px}
+.msc[data-size="sm"] .msc-art,.msc[data-size="sm"] .msc-front{left:-1px;top:-6px;width:122px;height:44px}
+.msc[data-size="sm"] .msc-reel{left:10px;top:11.5px;width:88px;height:17px;border-radius:1.5px}
+.msc[data-size="sm"] .msc-item,.msc[data-size="sm"] .msc-face{height:17px}
+.msc[data-size="sm"] .msc-face{gap:3px;padding:0 2.5px 0 1px}
+.msc[data-size="sm"] .msc-face .msc-logo-sm{margin:0}
+.msc[data-size="sm"] .msc-name{transform:translateY(-.3px)}
+.msc[data-size="sm"] .msc-item[data-face="opus"] .msc-face::before{top:1.4px}
+.msc[data-size="sm"] .msc-item[data-face="opus"] .msc-face::after{bottom:1.4px}
+.msc[data-size="sm"] .msc-item[data-face="opus"] .msc-face::before,.msc[data-size="sm"] .msc-item[data-face="opus"] .msc-face::after{height:.6px}
+.msc[data-size="sm"] .msc-item[data-face="astra"] .msc-face::before{box-shadow:7px 3px 0 rgba(255,255,255,.8),15px 13px 0 rgba(200,225,255,.6),72px 3px 0 rgba(255,255,255,.65),81px 12px 0 rgba(255,255,255,.55),77px 8px 0 rgba(170,205,255,.5)}
+.msc[data-size="sm"] .msc-item[data-face="astra"] .msc-logo{filter:drop-shadow(0 0 1px rgba(200,230,255,.95)) drop-shadow(0 0 2.5px rgba(120,180,255,.7))}
+.msc[data-size="sm"] .msc-item[data-face="astra"] .msc-name{text-shadow:0 0 4px rgba(150,200,255,.85)}
+.msc[data-size="sm"] .msc-glass{box-shadow:inset 0 .8px 1.2px rgba(0,0,0,.55), inset 0 0 0 .5px rgba(0,0,0,.6)}
+.msc[data-size="sm"]:has(.msc-reel:focus-visible) .msc-reel{outline-width:1.5px;outline-offset:2px}
+.msc[data-size="sm"] .msc-lever{left:107px;top:-5px;width:13px;height:38px;border-radius:5px}
+/* calm idle: a still, alternating glow; it chases slowly (1.2s per step) only on hover / keyboard focus */
+.msc[data-size="sm"][data-lights="idle"] .msc-lit{animation:none;opacity:calc(.22 + var(--p) * .7)}
+.msc[data-size="sm"][data-lights="idle"]:is(:hover,:focus-within) .msc-lit{animation:msc-chase-slow 3.6s linear infinite;animation-delay:calc(var(--k) * -1.2s)}
+@keyframes msc-chase-slow{0%,30%{opacity:1}36%,94%{opacity:.18}100%{opacity:1}}
+/* coin tray: a thin chrome lip at rest; on a jackpot it drops open, holds while coins land, then retracts */
+.msc[data-size="sm"].is-tray .msc-tray-in{animation:msc-tray-in 2.9s cubic-bezier(.3,1.4,.5,1) both}
+.msc[data-size="sm"].is-tray .msc-tray-lip{animation:msc-tray-lip 2.9s linear both}
+@keyframes msc-tray-in{0%{transform:scaleY(0)}7%{transform:scaleY(1.1)}11%,84%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes msc-tray-lip{0%{transform:translateY(0)}7%{transform:translateY(3.4px)}11%,84%{transform:translateY(3px)}100%{transform:translateY(0)}}
+
+@media (prefers-reduced-motion: reduce){
+  .msc,.msc *{animation:none !important;transition:none !important}
+  .msc .msc-lit{opacity:calc(1 - var(--k) * .45)}
+  .msc[data-size="sm"] .msc-lit{opacity:calc(.22 + var(--p) * .7)}
+  .msc-fx,.msc-flash{display:none}
+}

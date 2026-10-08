@@ -1,0 +1,16 @@
+# Creative Components
+
+Playful, illustrated UI components for AI apps. Each one is a real, usable control with a little story inside it.
+
+| Component | What it is |
+|---|---|
+| [Thinking Effort](./thinking-effort) | A thinking-effort slider. The knob is a brain and a zombie chases it. Pull it too low and the brain gets eaten. |
+| [Model Slot](./model-slot) | A model picker shaped like a tiny slot machine. Swipe the reel or pull the lever, and Opus and Astra hit a jackpot. |
+
+Every component is a single React 18 file plus one CSS file, with an offline `demo.html` and a showcase video in `media/`. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
+
+New components land here as they're made.
+
+Made by [@nextoneforeal](https://x.com/nextoneforeal) · [heynext1.com](https://heynext1.com)
+
+MIT License
