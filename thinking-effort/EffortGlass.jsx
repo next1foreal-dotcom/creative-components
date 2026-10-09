@@ -1165,7 +1165,7 @@ export default function EffortGlass({
               <span className={'eg-rec-chip' + (atRec ? ' on' : '')}>Recommended</span>
             </div>
             <div className="eg-roll" aria-hidden="true">
-              <div className="eg-roll-in" style={{ transform: `translateY(${-rollIdx * 100}%)` }}>
+              <div className="eg-roll-in" style={{ transform: `translateY(${-rollIdx * 40}px)` }}>
                 {levels.map((l, i) => <span key={l.name + i} className={'eg-roll-' + design(i) + (i === rollIdx ? ' on' : '')}>{l.name}</span>)}
                 <span className={rollIdx === n ? 'on eg-brainless' : 'eg-brainless'}>{BRAINLESS.name}</span>
               </div>

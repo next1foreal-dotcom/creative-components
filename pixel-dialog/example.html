@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pixel-dialog · plain HTML</title>
+  <script src="./pixel-dialog.js"></script>
+  <style>body { margin: 0; padding: 40px; background: #eceae6; font-family: system-ui, sans-serif; } .card { background: #fff; border-radius: 28px; padding: 28px; max-width: 680px; display: grid; gap: 24px; } pre { color: #6b6760; }</style>
+</head>
+<body>
+  <div class="card">
+    <pixel-dialog effort="high"></pixel-dialog>
+    <pixel-dialog size="lg" model="claude-opus" sound></pixel-dialog>
+  </div>
+  <pre id="log"></pre>
+  <script>
+    const log = (...a) => (document.getElementById('log').textContent += a.join(' ') + '\n');
+    document.querySelector('pixel-dialog').addEventListener('send', (e) => log('send', e.detail.text));
+  </script>
+</body>
+</html>

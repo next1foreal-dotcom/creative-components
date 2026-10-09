@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>thinking-effort · plain HTML</title>
+  <script src="./thinking-effort.js"></script>
+  <style>body { margin: 0; padding: 40px; background: #eceae6; font-family: system-ui, sans-serif; } .card { background: #fff; border-radius: 28px; padding: 28px; max-width: 680px; display: grid; gap: 24px; } pre { color: #6b6760; }</style>
+</head>
+<body>
+  <div class="card">
+    <thinking-effort value="1"></thinking-effort>
+  </div>
+  <pre id="log"></pre>
+  <script>
+    const log = (...a) => (document.getElementById('log').textContent += a.join(' ') + '\n');
+    document.querySelector('thinking-effort').addEventListener('change', (e) => log('effort', e.detail.level.name));
+  </script>
+</body>
+</html>

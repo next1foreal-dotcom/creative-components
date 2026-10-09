@@ -57,6 +57,18 @@ const [effort, setEffort] = useState(2);
 
 Glass needs something behind it, so put it over a gradient or an image (the demo uses a soft sunset gradient).
 
+## Plain HTML (no React)
+
+`thinking-effort.js` is a Web Component with everything inside it. Add the script and use the tag:
+
+```html
+<script src="thinking-effort.js"></script>
+
+<thinking-effort value="1"></thinking-effort>
+```
+
+Attributes match the props in kebab-case (`easter-eggs`, `levels` as JSON). The `change` event carries `detail.value` (the level index) and `detail.level`, and `brainless` fires when the zombie eats the brain. `el.value` reads the current level. See `example.html`.
+
 ## Props
 
 | Prop | Type | Default | Description |
@@ -120,6 +132,8 @@ It never fights the spring engine. The gag is only an **offset added to the zomb
 
 - `EffortGlass.jsx`: the component
 - `effort-glass.css`: styles
+- `thinking-effort.js`: the same component as a plain-HTML Web Component (`<thinking-effort>`), no React needed
+- `example.html`: the Web Component on a plain page
 - `demo.html`: fully self-contained preview (React bundled inline, CSS inline). It opens offline, including in phone file previews.
 
 ## Credits

@@ -31,6 +31,19 @@ import './model-slot-cabinet.css';
 
 Imperative: `ref.current.spin({ to: 'claude-opus' })`, `ref.current.step(1)`.
 
+## Plain HTML (no React)
+
+`model-slot.js` is a Web Component with everything inside it. Add the script and use the tag:
+
+```html
+<script src="model-slot.js"></script>
+
+<model-slot></model-slot>
+<model-slot size="lg" value="claude-opus" sound></model-slot>
+```
+
+Attributes match the props (`models` as JSON or `el.models = [...]`). The `change` event carries `detail.value`, `detail.model` and `detail.reason`. `el.value` reads the current model, and `el.spin()` and `el.step(n)` work on the element. See `example.html`.
+
 ## Props
 
 | Prop | Default | |
@@ -55,6 +68,8 @@ Imperative: `ref.current.spin({ to: 'claude-opus' })`, `ref.current.step(1)`.
 
 - `ModelSlotCabinet.jsx`: the component (cabinet in inline SVG, reel in HTML, one rAF spring loop)
 - `model-slot-cabinet.css`
+- `model-slot.js`: the same component as a plain-HTML Web Component (`<model-slot>`), no React needed
+- `example.html`: the Web Component on a plain page
 - `demo.html`: offline demo. Use `?mode=hero` for the large size and `?mode=chips` for all five models in composers
 - `media/`: showcase video and poster
 

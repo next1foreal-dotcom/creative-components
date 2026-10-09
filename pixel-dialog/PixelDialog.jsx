@@ -1,4 +1,3 @@
-'use client';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 // ---- sprites (pixel maps)
 // Pixel sprites as character maps. '.' = transparent. Rendered as merged-run SVG rects.
@@ -284,6 +283,75 @@ const NOTE2 = [
   'KBBK.KBBK',
   'KKKK.KKKK',
 ];
+
+// ---- v4: party (models as job classes) + MP (thinking effort)
+// A job swaps the hat (rows 0-9) and recolours the beard/collar rows (13-15) of every mage frame,
+// so all moods (talk, blink, listen, charge...) work for every class.
+const JOBS = {
+  mage: { label: 'MAGE' },
+  sage: {
+    label: 'SAGE',
+    hat: [
+      '.......KKK......',
+      '......KWYWK.....',
+      '......KWYWK.....',
+      '.....KWWYWWK....',
+      '.....KWYYYWK....',
+      '.....KWWYWWK....',
+      '....KWWWYWWWK...',
+      '....KWWWYWWWgK..',
+      '..KKYYYYYYYYYYKK',
+      '.KyYYYYYYYYYYYYK',
+    ],
+    low: { G: 'W' },
+  },
+  knight: {
+    label: 'KNIGHT',
+    hat: [
+      '..........KK....',
+      '.........KRRK...',
+      '........KRRK....',
+      '......KKKRKKK...',
+      '.....KTTTTTTTK..',
+      '....KTTWTTTTTtK.',
+      '....KTWTTTTTTtK.',
+      '....KTTTTTTTTtK.',
+      '...KTTTTTTTTTTtK',
+      '..KtTTTTTTTTTTtK',
+    ],
+    rowsLow: { 13: { G: 'S' }, 14: { G: 's' }, 15: { G: 'T' } },
+  },
+  ninja: {
+    label: 'NINJA',
+    hat: [
+      '................',
+      '................',
+      '......KKKKK.....',
+      '.....KZZZZZK....',
+      '....KZZZZZZZK...',
+      '....KZZZZZZZZK..',
+      '...KZZZZZZZZZK..',
+      '...KZZZZZZZZZZK.',
+      '..KKRRRRRRRRRRKK',
+      '.KaRRRRRRRRRRRRK',
+    ],
+    low: { G: 'Z', S: 'z' },
+  },
+};
+function jobMap(map, job) {
+  const j = JOBS[job] || JOBS.mage;
+  if (!j.hat && !j.low && !j.rowsLow) return map;
+  return map.map((r, i) => {
+    if (i < 10 && j.hat) return j.hat[i];
+    const lo = j.rowsLow ? j.rowsLow[i] : i >= 13 ? j.low : null;
+    return lo ? r.replace(/[A-Za-z]/g, (c) => lo[c] || c) : r;
+  });
+}
+// headband tail for the ninja (drawn beside the portrait)
+const TAIL = ['KK..', 'KRK.', '.KRK', '..KK'];
+const ZZZ = ['KKKKK', '...K.', '..K..', '.K...', 'KKKKK'];
+const BUTTON_MIC = BUTTON('B', 'b');
+const BUTTON_REC = BUTTON('A', 'a');
 // ---- end sprites
 
 
@@ -336,6 +404,18 @@ export function moodOf(text) {
   return null;
 }
 
+// party: each model is a job class (hat + beard colour on the same little face)
+export const DEFAULT_MODELS = [
+  { id: 'claude-opus', name: 'OPUS', job: 'sage' },
+  { id: 'claude-sonnet', name: 'SONNET', job: 'mage' },
+  { id: 'gpt', name: 'GPT', job: 'knight' },
+  { id: 'deepseek', name: 'DEEPSEEK', job: 'ninja' },
+];
+// thinking effort is MP: more effort spends more MP and the spell charges longer
+export const DEFAULT_EFFORTS = [
+  { id: 'low', label: 'LOW' }, { id: 'medium', label: 'MED' }, { id: 'high', label: 'HIGH' }, { id: 'max', label: 'MAX' },
+];
+const EFFORT_K = [0.7, 1, 1.4, 1.9];
 const A_MAP = BUTTON('A', 'a');
 const B_MAP = BUTTON('T', 't');
 
@@ -365,6 +445,9 @@ const SFX = {
   clear: () => tone([[600, 0.25, 'square', 0.04, 80]]),
   fizzle: () => tone([[300, 0.06, 'square', 0.04, 200], [160, 0.18, 'triangle', 0.05, 90]]),
   meteor: () => tone([[1400, 0.4, 'sawtooth', 0.04, 120], [60, 0.4, 'square', 0.07, 30]]),
+  party: () => tone([[523, 0.06], [784, 0.06], [1047, 0.12]]),
+  mpup: () => tone([[660, 0.05, 'square', 0.04], [990, 0.07, 'square', 0.04]]),
+  mpdown: () => tone([[660, 0.05, 'square', 0.04], [440, 0.07, 'square', 0.04]]),
   listen: () => tone([[880, 0.06, 'square', 0.04], [1320, 0.1, 'square', 0.04]]),
   heard: () => tone([[1320, 0.06, 'square', 0.04], [988, 0.06, 'square', 0.04], [1568, 0.14, 'square', 0.04]]),
   konami: () => tone([[784, 0.07], [988, 0.07], [1175, 0.07], [1568, 0.07], [1175, 0.07], [1568, 0.3]]),
@@ -374,6 +457,8 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
   const {
     value: valueProp, defaultValue = '', onChange, onSend, onClear, onAttach,
     name = 'AGENT', placeholder = 'PRESS START', busy = false, disabled = false,
+    models = DEFAULT_MODELS, model: modelProp, defaultModel, onModelChange,
+    efforts = DEFAULT_EFFORTS, effort: effortProp, defaultEffort = 'medium', onEffortChange,
     size = 'md', sound = false, spellTiers = [12, 60], voice = true, lang, onListen, accept, maxRows = 4, className = '', ariaLabel = 'Message the agent',
   } = props;
   const controlled = valueProp !== undefined;
@@ -407,6 +492,58 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
   const sfx = (k) => { if (sound) SFX[k](); };
 
   const setValue = (v) => { if (!controlled) setInner(v); onChange && onChange(v); };
+
+  // ---- party (model) + MP (effort)
+  const party = Array.isArray(models) && models.length ? models : null;
+  const [innerModel, setInnerModel] = useState(defaultModel || (party ? (party.find((m) => m.id === 'claude-sonnet') || party[0]).id : null));
+  const modelId = modelProp !== undefined ? modelProp : innerModel;
+  const cur = party ? party.find((m) => m.id === modelId) || party[0] : null;
+  const job = cur ? cur.job || 'mage' : 'mage';
+  const [menu, setMenu] = useState(false);
+  const [joined, setJoined] = useState(0);
+  const menuRef = useRef(null);
+  const pickModel = useCallback((mid, focusBack = true) => {
+    setMenu(false);
+    const m = party && party.find((x) => x.id === mid);
+    if (!m) return;
+    if (focusBack) later(() => taRef.current && taRef.current.focus(), 0);
+    if (m.id === (cur && cur.id)) return;
+    if (modelProp === undefined) setInnerModel(m.id);
+    onModelChange && onModelChange(m.id, m);
+    sfx('party');
+    const id = ++idc.current; setJoined(id); later(() => setJoined((x) => (x === id ? 0 : x)), 1300);
+    if (!valueRef.current) { setToast({ text: `${m.name} joined the party!`, id }); later(() => setToast((t) => (t && t.id === id ? null : t)), 1500); }
+    setAnnounce(`${m.name} selected`);
+  }, [party, cur, modelProp, onModelChange, later, sound]);
+  useEffect(() => {
+    if (!menu) return;
+    const el = menuRef.current; const on = el && el.querySelector('[aria-selected="true"]'); on && on.focus();
+    const away = (e) => { const r = rootRef.current; const path = e.composedPath ? e.composedPath() : [e.target]; if (r && !path.includes(r)) setMenu(false); };
+    document.addEventListener('pointerdown', away);
+    return () => document.removeEventListener('pointerdown', away);
+  }, [menu]);
+  const onMenuKey = (e) => {
+    const items = [...menuRef.current.querySelectorAll('[role="option"]')];
+    const root = rootRef.current && rootRef.current.getRootNode ? rootRef.current.getRootNode() : document;
+    const i = items.indexOf(root.activeElement || document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const n = items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length]; n && n.focus(); sfx('type'); }
+    else if (e.key === 'Escape') { e.preventDefault(); setMenu(false); taRef.current && taRef.current.focus(); }
+  };
+  const efs = Array.isArray(efforts) && efforts.length ? efforts : null;
+  const [innerEffort, setInnerEffort] = useState(defaultEffort);
+  const effortId = effortProp !== undefined ? effortProp : innerEffort;
+  const ei = efs ? Math.max(0, efs.findIndex((x) => x.id === effortId)) : 1;
+  const effortRef = useRef(ei); effortRef.current = ei;
+  const [mp, setMp] = useState(null);   // {id, phase: 'spend'|'refill', cost}
+  const pickEffort = useCallback((i) => {
+    if (!efs) return;
+    const n = Math.max(0, Math.min(efs.length - 1, i));
+    if (n === effortRef.current) return;
+    if (effortProp === undefined) setInnerEffort(efs[n].id);
+    onEffortChange && onEffortChange(efs[n].id, efs[n]);
+    sfx(n > effortRef.current ? 'mpup' : 'mpdown');
+    setAnnounce(`Thinking effort ${efs[n].label}`);
+  }, [efs, effortProp, onEffortChange, sound]);
 
   // ---- voice: hold the mic, the mage cups his ear, your voice floats in as notes
   const [listen, setListen] = useState(null);   // {id}
@@ -546,13 +683,16 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
       return;
     }
     const id = ++idc.current;
-    const tokens = estimateTokens(text), tier = spellTier(tokens, spellTiers), T = TIMING[tier];
+    const tokens = estimateTokens(text), tier = spellTier(tokens, spellTiers), T0 = TIMING[tier];
+    const ek = EFFORT_K[Math.min(3, effortRef.current)] || 1;
+    const T = { ...T0, charge: Math.round(T0.charge * ek) };
+    if (efs) { setMp({ id, phase: 'spend', cost: effortRef.current + 1 }); later(() => setMp((m) => (m && m.id === id ? { ...m, phase: 'refill' } : m)), T.charge + T.fly + T.boom); later(() => setMp((m) => (m && m.id === id ? null : m)), T.charge + T.fly + T.boom + 520); }
     onSend && onSend(text, files.map((f) => f.file || f));
     setPressA(true); later(() => setPressA(false), 140);
     sfx(tier === 2 ? 'meteor' : 'send');
     if (reducedMotion()) { setValue(''); setFiles([]); setAnnounce('Message sent'); return; }
     setCharge(true);
-    setCast({ text, id, files: files.length, phase: 'charge', tier, tokens });
+    setCast({ text, id, files: files.length, phase: 'charge', tier, tokens, effort: effortRef.current });
     setValue(''); setFiles([]);
     later(() => { setCharge(false); setCast((c) => (c && c.id === id ? { ...c, phase: 'fly' } : c)); }, T.charge);
     later(() => { if (tier === 2) setShake(); setCast((c) => (c && c.id === id ? { ...c, phase: 'boom' } : c)); }, T.charge + T.fly);
@@ -604,8 +744,9 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
     attach: (list) => addFiles(Array.isArray(list) ? list : [list]),
     konami: toggleGold,
     listen: startListening, stopListening, simulateVoice,
+    setModel: (id) => pickModel(id, false), openParty: () => setMenu(true), setEffort: (id) => efs && pickEffort(efs.findIndex((x) => x.id === id)),
     get value() { return value; },
-  }), [send, clear, addFiles, toggleGold, value, startListening, stopListening, simulateVoice]);
+  }), [send, clear, addFiles, toggleGold, value, startListening, stopListening, simulateVoice, pickModel, pickEffort, efs]);
 
   const onKeyDown = (e) => {
     // Konami sequence (works while the box has focus)
@@ -625,6 +766,8 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
   const onDrop = (e) => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addFiles(e.dataTransfer.files); } };
 
   const mood = busy || cast || listen ? null : moodOf(value);
+  const dozing = efs && ei === 0 && !value && !cast && !busy && !listen && !focused && !mood;
+  const limit = efs && ei === efs.length - 1;
   const tokens = estimateTokens(value);
   const tier = spellTier(tokens, spellTiers);
   const mageMap = listen ? (blink ? MAGE.listenBlink : MAGE.listen)
@@ -635,23 +778,59 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
     : mood === 'shout' ? MAGE.shock
     : mood === 'ask' ? MAGE.puzzled
     : mood === 'nice' ? MAGE.happy
-    : talk ? MAGE.talk : blink ? MAGE.blink : MAGE.idle;
+    : talk ? MAGE.talk : blink || dozing ? MAGE.blink : MAGE.idle;
+  const faceMap = jobMap(mageMap, job);
   const empty = !value;
   const chars = [...value];
   const showPh = empty && !cast && !shatter && !busy && !toast && !listen;
-  const cls = ['pd', `pd-${size === 'lg' ? 'lg' : 'md'}`, gold && 'pd-gold', focused && 'pd-focus', busy && 'pd-busy', listen && 'pd-listening', disabled && 'pd-disabled', className].filter(Boolean).join(' ');
+  const cls = ['pd', `pd-${size === 'lg' ? 'lg' : 'md'}`, 'pd-job-' + job, limit && 'pd-limit', menu && 'pd-menu-open', gold && 'pd-gold', focused && 'pd-focus', busy && 'pd-busy', listen && 'pd-listening', disabled && 'pd-disabled', className].filter(Boolean).join(' ');
 
   const chestPal = useMemo(() => ({ ...PAL, ...(chest ? RARITY[chest.rarity].pal : {}) }), [chest && chest.rarity]);
   return (
     <div ref={rootRef} className={cls} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
       <div className={'pd-frame' + (shaking ? ' pd-shaking' : '')}>
-        <span className="pd-plate" aria-hidden="true">{name}</span>
+        {party ? (
+          <button type="button" className="pd-plate pd-plate-btn" aria-haspopup="listbox" aria-expanded={menu} aria-label={`Model: ${cur.name}. Change party member`} disabled={disabled}
+            onClick={() => { setMenu((o) => !o); sfx('type'); }}>{cur.name}<span className="pd-caret" aria-hidden="true">▾</span></button>
+        ) : <span className="pd-plate" aria-hidden="true">{name}</span>}
+        {menu && party ? (
+          <div className="pd-menu" ref={menuRef} role="listbox" aria-label="Party" onKeyDown={onMenuKey}>
+            <span className="pd-menu-title" aria-hidden="true">PARTY</span>
+            {party.map((m) => (
+              <button type="button" role="option" aria-selected={m.id === cur.id} key={m.id} className={'pd-member' + (m.id === cur.id ? ' pd-member-on' : '')} onClick={() => pickModel(m.id)}>
+                <span className="pd-hand" aria-hidden="true">▶</span>
+                <span className="pd-member-face"><Sprite map={jobMap(MAGE.idle, m.job || 'mage')} /></span>
+                <span className="pd-member-name">{m.name}</span>
+                <span className="pd-member-job">{(JOBS[m.job] || JOBS.mage).label}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {efs ? (
+          <div className={'pd-mp' + (mp ? ' pd-mp-' + mp.phase : '')} role="slider" tabIndex={disabled ? -1 : 0} aria-label="Thinking effort" aria-valuemin={0} aria-valuemax={efs.length - 1} aria-valuenow={ei} aria-valuetext={efs[ei].label}
+            onKeyDown={(e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); pickEffort(ei + 1); } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); pickEffort(ei - 1); } else if (e.key === 'Home') pickEffort(0); else if (e.key === 'End') pickEffort(efs.length - 1); }}>
+            <span className="pd-mp-l" aria-hidden="true">MP</span>
+            <span className="pd-pips">
+              {efs.map((x, i) => (
+                <button type="button" tabIndex={-1} key={x.id} aria-label={x.label} disabled={disabled}
+                  className={'pd-pip' + (i <= ei ? ' on' : '') + (mp && mp.phase === 'spend' && i <= ei ? ' spend' : '')} style={{ '--k': ei - i }}
+                  onClick={() => pickEffort(i === ei && i > 0 ? i - 1 : i)} />
+              ))}
+            </span>
+            <span className="pd-mp-v" aria-hidden="true">{efs[ei].label}</span>
+            {mp && mp.phase === 'spend' ? <span className="pd-mp-cost" key={mp.id} aria-hidden="true">-{mp.cost * 25} MP</span> : null}
+          </div>
+        ) : null}
         {listen ? <span className="pd-tag pd-tag-listen" aria-hidden="true">LISTEN<span className="pd-vu">{[0, 1, 2, 3, 4].map((i) => <i key={i} className={level * 5 > i + 0.3 ? 'on' : ''} />)}</span></span>
           : busy ? <span className="pd-tag pd-tag-enemy" aria-hidden="true">ENEMY TURN</span>
           : value && !cast && !listen ? <span className={'pd-tag pd-tag-t' + tier} aria-hidden="true">{SPELLS[tier]}<b>{tokens}</b></span> : null}
         <i className="pd-rivet pd-r1" /><i className="pd-rivet pd-r2" /><i className="pd-rivet pd-r3" /><i className="pd-rivet pd-r4" />
         <div className={'pd-portrait' + (charge ? ' pd-charging' : '')}>
-          <Sprite map={mageMap} className="pd-mage" />
+          <Sprite map={faceMap} className="pd-mage" key={'m' + job + (joined ? joined : '')} />
+          {job === 'ninja' ? <span className="pd-tail"><Sprite map={TAIL} /></span> : null}
+          {dozing ? <span className="pd-zzz"><Sprite map={ZZZ} /><Sprite map={ZZZ} /></span> : null}
+          {limit && !cast && !busy ? <i className="pd-limit-aura" /> : null}
+          {joined ? <span className="pd-joined" key={'j' + joined}>✦</span> : null}
           {gold ? <i className="pd-glint" /> : null}
           {charge ? <><i className="pd-aura" /><i className="pd-aura pd-aura2" /></> : null}
           {value && !cast && !busy && !listen ? <span className={'pd-orb pd-orb' + tier} key={'o' + tier}><Sprite map={ORB[tier]} /></span> : null}
@@ -735,9 +914,10 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
             <Sprite map={CHEST_ICON} className="pd-chesticon" />
           </button>
           {voice ? (
-            <button type="button" className={'pd-micbtn' + (listen ? ' pd-rec' : '')} aria-label={listen ? 'Stop voice input' : 'Voice input'} aria-pressed={!!listen} disabled={disabled || busy}
+            <button type="button" className={'pd-btn pd-micbtn' + (listen ? ' pd-rec' : '')} aria-label={listen ? 'Stop voice input' : 'Voice input'} aria-pressed={!!listen} disabled={disabled || busy}
               onClick={() => (listen ? stopListening() : startListening())}>
-              <Sprite map={listen ? MIC_REC : MIC_ICON} className="pd-micicon" />
+              <Sprite map={listen ? BUTTON_REC : BUTTON_MIC} className="pd-btn-art" />
+              <span className="pd-micglyph"><Sprite map={HORN} /></span>
             </button>
           ) : null}
           <button type="button" className={'pd-btn pd-b' + (pressB ? ' pd-down' : '')} aria-label="Clear" disabled={disabled} onClick={clear}>

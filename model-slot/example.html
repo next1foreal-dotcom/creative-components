@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>model-slot · plain HTML</title>
+  <script src="./model-slot.js"></script>
+  <style>body { margin: 0; padding: 40px; background: #eceae6; font-family: system-ui, sans-serif; } .card { background: #fff; border-radius: 28px; padding: 28px; max-width: 680px; display: grid; gap: 24px; } pre { color: #6b6760; }</style>
+</head>
+<body>
+  <div class="card">
+    <model-slot></model-slot>
+    <model-slot size="lg" value="claude-opus"></model-slot>
+  </div>
+  <pre id="log"></pre>
+  <script>
+    const log = (...a) => (document.getElementById('log').textContent += a.join(' ') + '\n');
+    document.querySelector('model-slot').addEventListener('change', (e) => log('model', e.detail.value));
+  </script>
+</body>
+</html>
