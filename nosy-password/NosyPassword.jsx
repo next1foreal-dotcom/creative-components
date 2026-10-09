@@ -1,11 +1,11 @@
-// NosyPassword — a password field with a nosy raccoon neighbour peeking over its top edge.
-// Its eyes follow your caret as you type. Reveal the password and it gasps, whips its head away and
-// covers its eyes, then sneaks a peek between its paws and gets caught. Hide it again and it whistles
+// NosyPassword — a password field with a nosy little animal peeking over its top edge (animal="teddy" | "corgi").
+// Its eyes follow your caret as you type. Reveal the password and it gasps and hides its eyes in its own way
+// (the teddy flips its ears over them, the corgi turns round and shows you its butt), then sneaks a peek and gets caught. Hide it again and it whistles
 // like nothing happened. Clear the field and it sinks back, disappointed.
 // size="md" (default) fits a sign-in form; size="lg" is the showcase drawing.
 import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef, useId } from 'react';
 
-const T = { gasp: 130, peekAt: 1100, peekFor: 650, caughtFor: 420, peekEvery: 3600, whistle: 1600, sad: 1300, startle: 420 };
+const T = { gasp: 180, peekAt: 1100, peekFor: 650, caughtFor: 420, peekEvery: 3600, whistle: 1600, sad: 1300, startle: 420 };
 const reduced = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -19,89 +19,144 @@ function EyeIcon({ open }) {
   );
 }
 
-function Raccoon({ uid, px, py, glint }) {
-  const c = (n) => `${uid}-${n}`;
+function Eye({ x, y, cls = '' }) {
   return (
-    <svg className="np-art" viewBox="0 0 140 96" aria-hidden="true" focusable="false" style={{ '--px': px + 'px', '--py': py + 'px' }}>
-      <defs>
-        <clipPath id={c('field')}><rect x="-40" y="-60" width="220" height="148" /></clipPath>
-        <clipPath id={c('el')}><circle cx="54" cy="56" r="7.6" /></clipPath>
-        <clipPath id={c('er')}><circle cx="86" cy="56" r="7.6" /></clipPath>
-        <pattern id={c('pj')} width="8" height="8" patternUnits="userSpaceOnUse">
-          <rect width="8" height="8" fill="#eaf1fb" /><rect width="4" height="8" fill="#7fa6dd" />
-        </pattern>
-        <radialGradient id={c('fur')} cx="50%" cy="35%" r="65%">
-          <stop offset="0" stopColor="#b3b8c1" /><stop offset="1" stopColor="#8b919c" />
-        </radialGradient>
-      </defs>
-      <g clipPath={`url(#${c('field')})`}>
-        <g className="np-turn">
-          <g className="np-head">
-            {/* pajama collar */}
-            <path d="M34 96 Q36 80 70 80 Q104 80 106 96 Z" fill={`url(#${c('pj')})`} stroke="#5c7fb3" strokeWidth="1.2" />
-            {/* ears */}
-            <g className="np-ear l"><path d="M30 46 Q24 16 50 26 Q44 36 30 46Z" fill="#6f7580" /><path d="M33 40 Q30 23 45 28 Q40 34 33 40Z" fill="#f2b9b4" /></g>
-            <g className="np-ear r"><path d="M110 46 Q116 16 90 26 Q96 36 110 46Z" fill="#6f7580" /><path d="M107 40 Q110 23 95 28 Q100 34 107 40Z" fill="#f2b9b4" /></g>
-            {/* head */}
-            <ellipse cx="70" cy="58" rx="40" ry="31" fill={`url(#${c('fur')})`} stroke="#5f6570" strokeWidth="1.3" />
-            <path d="M62 28 Q70 24 78 28 L74 44 Q70 47 66 44Z" fill="#6f7580" opacity=".9" />
-            {/* white brows + cheeks */}
-            <path d="M38 50 Q50 34 66 46 Q52 42 38 50Z" fill="#f6f3ee" />
-            <path d="M102 50 Q90 34 74 46 Q88 42 102 50Z" fill="#f6f3ee" />
-            {/* mask */}
-            <path d="M32 60 Q34 44 54 45 Q64 46 70 52 Q76 46 86 45 Q106 44 108 60 Q100 70 86 67 Q76 65 70 60 Q64 65 54 67 Q40 70 32 60Z" fill="#2f333b" />
-            {/* muzzle */}
-            <ellipse cx="70" cy="74" rx="20" ry="12.5" fill="#f6f3ee" />
-            {/* blush */}
-            <ellipse className="np-blush" cx="44" cy="73" rx="7" ry="3.6" fill="#ff8f9a" />
-            <ellipse className="np-blush" cx="96" cy="73" rx="7" ry="3.6" fill="#ff8f9a" />
-            {/* eyes */}
-            {[['l', 54], ['r', 86]].map(([s, x]) => (
-              <g key={s} className={'np-eye ' + s}>
-                <circle cx={x} cy="56" r="7.6" fill="#fff" />
-                <g clipPath={`url(#${c('e' + s)})`}>
-                  <g className="np-pupil"><circle cx={x} cy="56" r="4.1" fill="#1b1d22" /><circle cx={x + 1.5} cy="54.4" r="1.4" fill="#fff" /></g>
-                  <rect className="np-lid" x={x - 9} y="47" width="18" height="18" fill="#3a3f48" />
-                </g>
-              </g>
-            ))}
-            {/* glasses */}
-            <g className="np-glasses" fill="rgba(255,255,255,.14)" stroke="#c99a3b" strokeWidth="2.1">
-              <circle cx="54" cy="56" r="11.2" /><circle cx="86" cy="56" r="11.2" />
-              <path d="M65 54 Q70 51 75 54" fill="none" />
-              <path d="M42.8 55 L33 52" fill="none" /><path d="M97.2 55 L107 52" fill="none" />
-            </g>
-            <g className="np-glint" key={glint}>
-              <path d="M47 52 L51 48" /><path d="M79 52 L83 48" />
-            </g>
-            {/* nose + mouth */}
-            <ellipse cx="70" cy="69.5" rx="5.6" ry="3.9" fill="#22252b" />
-            <ellipse cx="68.4" cy="68.4" rx="1.7" ry="1" fill="#fff" opacity=".7" />
-            <path className="np-mouth smile" d="M64.5 76 Q70 80.5 75.5 76" fill="none" stroke="#3a3f48" strokeWidth="1.7" strokeLinecap="round" />
-            <path className="np-mouth flat" d="M65 78 Q70 76.6 75 78" fill="none" stroke="#3a3f48" strokeWidth="1.7" strokeLinecap="round" />
-            <ellipse className="np-mouth oo" cx="71.5" cy="78" rx="2.4" ry="2.7" fill="#5b2b33" stroke="#3a3f48" strokeWidth="1.1" />
-            <path className="np-mouth gasp" d="M66.5 78.5 Q70 73.5 73.5 78.5 Q70 81.5 66.5 78.5Z" fill="#5b2b33" stroke="#3a3f48" strokeWidth="1.1" />
-          </g>
-          {/* forearms, clipped at the field edge */}
-          <g className="np-arm l"><rect x="38" y="88" width="16" height="44" rx="8" fill="#6a707b" /></g>
-          <g className="np-arm r"><rect x="86" y="88" width="16" height="44" rx="8" fill="#6a707b" /></g>
+    <g className={'np-eye ' + cls}>
+      <g className="np-eyeopen">
+        <g className="np-iris">
+          <ellipse cx={x} cy={y} rx="8" ry="8.8" fill="#2a1d17" />
+          <ellipse cx={x} cy={y + 3.5} rx="5.4" ry="3.6" fill="#4a3226" opacity=".8" />
+          <circle cx={x + 2.6} cy={y - 3.2} r="3.1" fill="#fff" />
+          <circle cx={x - 2.7} cy={y + 2.9} r="1.35" fill="#fff" />
         </g>
       </g>
-      {/* sweat + notes + z, outside the head so they float */}
-      <path className="np-sweat" d="M112 22 Q117 30 112 34 Q107 30 112 22Z" fill="#8fd0ff" stroke="#4d9ad6" strokeWidth="1" />
-      <g className="np-notes" fill="#9a7426"><text x="106" y="82" className="n1">♪</text><text x="116" y="70" className="n2">♫</text></g>
-      <g className="np-z" fill="#7d8796"><text x="104" y="40" className="z1">z</text><text x="112" y="30" className="z2">z</text></g>
-      {/* paws, in front of the field edge */}
-      <g className="np-turn">
-        {[['l', 46], ['r', 94]].map(([s, x]) => (
-          <g key={s} className={'np-paw ' + s}>
-            <g className="np-pawshape">
-              <ellipse cx={x} cy="88" rx="10.5" ry="7.2" fill="#5d626c" stroke="#464a52" strokeWidth="1.1" />
-              <path d={`M${x - 4.5} 84.5 v4 M${x} 83.6 v4.6 M${x + 4.5} 84.5 v4`} stroke="#3e4249" strokeWidth="1.2" strokeLinecap="round" />
-            </g>
-          </g>
-        ))}
+      <path className="np-eyesleep" d={`M${x - 7} ${y} Q${x} ${y + 5.5} ${x + 7} ${y}`} />
+      <path className="np-eyehappy" d={`M${x - 7} ${y + 2.5} Q${x} ${y - 5} ${x + 7} ${y + 2.5}`} />
+    </g>
+  );
+}
+function Mouth({ y = 75, ink }) {
+  return (
+    <g className="np-mouths" stroke={ink} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path className="np-mouth smile" d={`M63.5 ${y} Q66.75 ${y + 4} 70 ${y} Q73.25 ${y + 4} 76.5 ${y}`} fill="none" />
+      <path className="np-mouth flat" d={`M65 ${y + 2} Q70 ${y + 0.6} 75 ${y + 2}`} fill="none" />
+      <ellipse className="np-mouth oo" cx="71" cy={y + 2.4} rx="2.4" ry="2.8" fill="#7a2f36" strokeWidth="1.1" />
+      <ellipse className="np-mouth gasp" cx="70" cy={y + 2.6} rx="3.6" ry="4.4" fill="#7a2f36" strokeWidth="1.1" />
+    </g>
+  );
+}
+const Fx = () => (
+  <>
+    <path className="np-sweat" d="M114 26 Q119 34 114 38 Q109 34 114 26Z" fill="#9ad7ff" stroke="#58a5dc" strokeWidth="1" />
+    <g className="np-notes" fill="#9a7426"><text x="112" y="78" className="n1">♪</text><text x="122" y="64" className="n2">♫</text></g>
+    <g className="np-z" fill="#8a93a3"><text x="106" y="40" className="z1">z</text><text x="114" y="30" className="z2">z</text></g>
+  </>
+);
+const Paws = ({ fill, line, beans }) => (
+  <g className="np-turn">
+    {[['l', 48], ['r', 92]].map(([s, x]) => (
+      <g key={s} className={'np-paw ' + s}>
+        <ellipse cx={x} cy="88" rx="10" ry="7" fill={fill} stroke={line} strokeWidth="1.1" />
+        <path d={`M${x - 4} 85 v3.4 M${x} 84.2 v3.8 M${x + 4} 85 v3.4`} stroke={beans} strokeWidth="1.2" strokeLinecap="round" />
       </g>
+    ))}
+  </g>
+);
+
+// Toy poodle ("teddy"): apricot curls, a pink bow. Covers its eyes with its big curly ears.
+function Teddy({ c, tick }) {
+  const ear = (s, pts, ox) => (
+    <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
+      <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
+        {pts.map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} fill="#b97a48" />)}
+        {pts.map(([x, y], i) => <path key={'c' + i} d={`M${x - 4} ${y + 1} q4 -5 8 0`} fill="none" stroke="#9b5f33" strokeWidth="1.3" strokeLinecap="round" opacity=".7" />)}
+      </g>
+    </g>
+  );
+  return (
+    <>
+      <g clipPath={`url(#${c('field')})`}>
+        <g className="np-turn"><g className="np-head">
+          {[[50, 39, 10], [59, 32, 11], [70, 29, 11.5], [81, 32, 11], [90, 39, 10], [42, 49, 9.5], [98, 49, 9.5], [41, 66, 10.5], [99, 66, 10.5]].map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} fill="#d69c66" />)}
+          <ellipse cx="70" cy="61" rx="33" ry="27" fill="#d69c66" />
+          {[[58, 31], [70, 27], [82, 31]].map(([x, y], i) => <path key={i} d={`M${x - 4} ${y + 2} q4 -5 8 0`} fill="none" stroke="#b97a48" strokeWidth="1.3" strokeLinecap="round" />)}
+          <g className="np-bow"><path d="M86 30 L78 24 Q76 30 78 36Z M86 30 L94 24 Q96 30 94 36Z" fill="#ff8fab" stroke="#e0607f" strokeWidth="1" /><circle cx="86" cy="30" r="2.8" fill="#ff6f93" /></g>
+          <ellipse cx="70" cy="75" rx="14.5" ry="10.5" fill="#f4dbbd" />
+          <ellipse className="np-blush" cx="46" cy="73" rx="6.5" ry="3.6" fill="#ff9aa6" />
+          <ellipse className="np-blush" cx="94" cy="73" rx="6.5" ry="3.6" fill="#ff9aa6" />
+          <Eye x={56} y={61} cls="l" /><Eye x={84} y={61} cls="r" />
+          <ellipse cx="70" cy="69.5" rx="4.8" ry="3.6" fill="#3b2418" /><ellipse cx="68.8" cy="68.6" rx="1.5" ry=".9" fill="#fff" opacity=".7" />
+          <Mouth y={75} ink="#3b2418" />
+          {ear('l', [[38, 52, 10], [36, 64, 10.5], [37, 76, 9.5]], 40)}
+          {ear('r', [[102, 52, 10], [104, 64, 10.5], [103, 76, 9.5]], 100)}
+        </g></g>
+      </g>
+      <Fx />
+      <Paws fill="#e2ad7c" line="#bf8352" beans="#a8693a" />
+    </>
+  );
+}
+
+// Corgi: fox-orange, white blaze. Covers its eyes by turning round and showing you its butt.
+function Corgi({ c, tick }) {
+  const ear = (s, d, inner, ox) => (
+    <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
+      <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
+        <path d={d} fill="#e88f3a" stroke="#c9732a" strokeWidth="1.2" strokeLinejoin="round" /><path d={inner} fill="#ffc4b8" />
+      </g>
+    </g>
+  );
+  return (
+    <>
+      <g clipPath={`url(#${c('field')})`}>
+        <g className="np-front"><g className="np-turn"><g className="np-head">
+          {ear('l', 'M36 52 Q34 26 40 13 Q44 9 49 14 Q58 26 64 40 Z', 'M41 44 Q40 28 43 20 Q51 30 56 40 Z', 50)}
+          {ear('r', 'M104 52 Q106 26 100 13 Q96 9 91 14 Q82 26 76 40 Z', 'M99 44 Q100 28 97 20 Q89 30 84 40 Z', 90)}
+          <ellipse cx="70" cy="61" rx="35" ry="27.5" fill="#f2a24e" />
+          <path d="M66 34 Q70 32 74 34 Q77 46 80 58 Q70 63 60 58 Q63 46 66 34Z" fill="#fff8ef" />
+          <ellipse cx="70" cy="77" rx="24" ry="13" fill="#fff8ef" />
+          <ellipse cx="45" cy="76" rx="10" ry="8" fill="#fff8ef" /><ellipse cx="95" cy="76" rx="10" ry="8" fill="#fff8ef" />
+          <ellipse className="np-blush" cx="45" cy="72" rx="6.5" ry="3.6" fill="#ff9aa6" />
+          <ellipse className="np-blush" cx="95" cy="72" rx="6.5" ry="3.6" fill="#ff9aa6" />
+          <Eye x={55} y={60} cls="l" /><Eye x={85} y={60} cls="r" />
+          <ellipse cx="70" cy="69" rx="5" ry="3.7" fill="#2b211c" /><ellipse cx="68.7" cy="68" rx="1.5" ry=".9" fill="#fff" opacity=".7" />
+          <Mouth y={74.5} ink="#2b211c" />
+        </g></g></g>
+        <g className="np-back">
+          <g className="np-peekhead">
+            <path d="M101 44 Q101 26 106 20 Q110 26 114 40Z" fill="#e88f3a" stroke="#c9732a" strokeWidth="1.1" />
+            <ellipse cx="103" cy="56" rx="15" ry="13" fill="#f2a24e" />
+            <ellipse cx="96" cy="64" rx="9" ry="6.5" fill="#fff8ef" />
+            <ellipse cx="101" cy="55" rx="4.6" ry="5" fill="#2a1d17" /><circle cx="102.4" cy="53.2" r="1.8" fill="#fff" />
+            <ellipse cx="90" cy="62" rx="2.6" ry="2" fill="#2b211c" />
+          </g>
+          <g className="np-buttwrap">
+            <circle cx="56" cy="72" r="21" fill="#f2a24e" /><circle cx="84" cy="72" r="21" fill="#f2a24e" />
+            <ellipse cx="70" cy="84" rx="35" ry="14" fill="#f2a24e" />
+            <path d="M70 58 Q71 66 70 74" stroke="#d2843a" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+            <path d="M44 88 Q48 74 60 76 Q66 70 70 76 Q74 70 80 76 Q92 74 96 88Z" fill="#fff8ef" />
+            <g className="np-nub"><circle cx="70" cy="53" r="6" fill="#fff8ef" stroke="#eadbc8" strokeWidth="1" /><circle cx="70" cy="56" r="4" fill="#f2a24e" /></g>
+          </g>
+        </g>
+      </g>
+      <Fx />
+      <g className="np-front"><Paws fill="#fffaf3" line="#e3d2bf" beans="#e7b8a8" /></g>
+      <g className="np-back np-backpaws">
+        <ellipse cx="50" cy="88" rx="9.5" ry="6.5" fill="#fffaf3" stroke="#e3d2bf" strokeWidth="1.1" />
+        <ellipse cx="90" cy="88" rx="9.5" ry="6.5" fill="#fffaf3" stroke="#e3d2bf" strokeWidth="1.1" />
+      </g>
+    </>
+  );
+}
+
+const ANIMALS = { teddy: Teddy, corgi: Corgi };
+function Art({ animal, uid, px, py, tick }) {
+  const c = (n) => `${uid}-${n}`;
+  const A = ANIMALS[animal] || Teddy;
+  return (
+    <svg className="np-art" viewBox="0 0 140 96" aria-hidden="true" focusable="false" style={{ '--px': px + 'px', '--py': py + 'px' }}>
+      <defs><clipPath id={c('field')}><rect x="-40" y="-60" width="220" height="148" /></clipPath></defs>
+      <A c={c} tick={tick} />
     </svg>
   );
 }
@@ -111,7 +166,7 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
     value: valueProp, defaultValue = '', onChange,
     revealed: revealedProp, defaultRevealed = false, onRevealChange,
     label = 'Password', placeholder = 'Enter password', name, id: idProp, autoComplete = 'current-password',
-    disabled = false, size = 'md', className = '', style, inputProps,
+    disabled = false, size = 'md', animal = 'teddy', className = '', style, inputProps,
   } = props;
   const uid = 'np' + useId().replace(/[^a-zA-Z0-9]/g, '');
   const inputId = idProp || uid + '-in';
@@ -220,11 +275,11 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
   if (phase === 'sad') { px = 0; py = 3.6; }
   if (asleep) { px = 0; py = 2; }
 
-  const cls = ['np', 'np-' + size, 'is-' + phase, asleep && 'is-asleep', focused && 'is-focus', revealed && 'is-revealed', value && 'has-value', disabled && 'is-disabled', className].filter(Boolean).join(' ');
+  const cls = ['np', 'np-' + size, 'np-a-' + (ANIMALS[animal] ? animal : 'teddy'), glint > 0 && 'has-ticked', 'is-' + phase, asleep && 'is-asleep', focused && 'is-focus', revealed && 'is-revealed', value && 'has-value', disabled && 'is-disabled', className].filter(Boolean).join(' ');
   return (
-    <div ref={rootRef} className={cls} style={{ ...style, '--lean': lean.toFixed(3) }}>
+    <div ref={rootRef} className={cls} style={{ ...style, '--lean': lean.toFixed(3), '--hx': (focused && !revealed ? frac - 0.5 : 0).toFixed(3) }}>
       <label className="np-label" htmlFor={inputId}>{label}</label>
-      <Raccoon uid={uid} px={px} py={py} glint={glint} />
+      <Art animal={animal} uid={uid} px={px} py={py} tick={glint} />
       <div className="np-field">
         <input
           ref={inRef} id={inputId} name={name} className="np-input"

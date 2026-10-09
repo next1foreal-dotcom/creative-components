@@ -7,7 +7,7 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 | [Thinking Effort](./thinking-effort) | A thinking-effort slider. The knob is a brain and a zombie chases it. Pull it too low and the brain gets eaten. |
 | [Model Slot](./model-slot) | A model picker shaped like a tiny slot machine. Swipe the reel or pull the lever, and Opus and Astra hit a jackpot. |
 | [Pixel Dialog](./pixel-dialog) | A chat input that's a 16-bit RPG dialogue box. A mage casts your message as FIRE, FIRA or FIRAGA by its length, listens when you talk, and drops loot when you attach a file. Switch models by changing party members and set thinking effort on an MP bar. |
-| [Nosy Password](./nosy-password) | A password field with a nosy raccoon peeking over it. Its eyes follow your typing, and when you reveal the password it covers its eyes, then sneaks a peek. |
+| [Nosy Password](./nosy-password) | A password field with a nosy teddy or corgi peeking over it. It watches you type, and when you reveal the password it hides its eyes (the corgi shows you its butt), then sneaks a peek. |
 
 Every component is a single React 18 file plus one CSS file, with an offline `demo.html` and a showcase video in `media/`.
 
