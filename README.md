@@ -18,9 +18,10 @@ Every component is a single React 18 file plus one CSS file, with an offline `de
 <thinking-effort value="1"></thinking-effort>
 <model-slot></model-slot>
 <pixel-dialog></pixel-dialog>
+<nosy-password></nosy-password>
 ```
 
-`creative-components.js` has all three. Each folder's own `<name>.js` has just that one, and `example.html` shows it working. A tiny renderer ([Preact](https://preactjs.com)) is bundled inside, so the page needs nothing else. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
+`creative-components.js` has all of them. Each folder's own `<name>.js` has just that one, and `example.html` shows it working. A tiny renderer ([Preact](https://preactjs.com)) is bundled inside, so the page needs nothing else. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
 
 New components land here as they're made.
 

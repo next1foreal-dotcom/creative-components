@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nosy-password · plain HTML</title>
+  <script src="./nosy-password.js"></script>
+  <style>body { margin: 0; padding: 40px; background: #eceae6; font-family: system-ui, sans-serif; } .card { background: #fff; border-radius: 28px; padding: 28px; max-width: 520px; display: grid; gap: 28px; } pre { color: #6b6760; }</style>
+</head>
+<body>
+  <div class="card">
+    <nosy-password label="Password" placeholder="Try typing (demo)"></nosy-password>
+    <nosy-password size="lg"></nosy-password>
+  </div>
+  <pre id="log"></pre>
+  <script>
+    const log = (...a) => (document.getElementById('log').textContent += a.join(' ') + '\n');
+    document.querySelector('nosy-password').addEventListener('reveal', (e) => log('revealed', e.detail.revealed));
+  </script>
+</body>
+</html>
