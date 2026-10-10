@@ -71,15 +71,26 @@ const Fx = () => (
     <g className="np-z" fill="#8a93a3"><text x="106" y="40" className="z1">z</text><text x="114" y="30" className="z2">z</text></g>
   </>
 );
-function Paws({ fill = '#fff', front, xs = [48, 92], pad, big, beans }) {
+function Paws({ fill = '#fff', front, xs = [48, 92], pad, big, beans, arms }) {
   return (
     <g className="np-turn">
       {front}
+      {arms && (
+        <g clipPath={`url(#${arms})`}>
+          {[['l', xs[0]], ['r', xs[1]]].map(([s, x]) => (
+            <g key={s} className={'np-paw np-armwrap ' + s}>
+              <path className="np-arm" d={`M${x - 7.4} 86 L${x - 8.4} 140 L${x + 8.4} 140 L${x + 7.4} 86Z`} fill={fill} />
+              <path className="np-arm" d={`M${x - 7.4} 86 L${x - 8.4} 140 M${x + 7.4} 86 L${x + 8.4} 140`} fill="none" {...line} />
+            </g>
+          ))}
+        </g>
+      )}
       {[['l', xs[0]], ['r', xs[1]]].map(([s, x]) => (
         <g key={s} className={'np-paw ' + s}>
           <ellipse cx={x} cy="88" rx={big ? 11.6 : 9.6} ry={big ? 8.4 : 7} fill={fill} {...line} />
+          {arms && <path className="np-pawback" d={`M${x - 4} 81.4 q.6 3 .2 5 M${x + 4} 81.4 q-.6 3 -.2 5`} fill="none" {...line} strokeWidth="1.6" />}
           {beans ? (
-            <g fill={pad} stroke="#141010" strokeWidth="1.1">
+            <g className="np-beans" fill={pad} stroke="#141010" strokeWidth="1.1">
               <ellipse cx={x} cy="89.6" rx="4.8" ry="3.4" />
               <circle cx={x - 5} cy="84.8" r="1.7" /><circle cx={x} cy="83.4" r="1.8" /><circle cx={x + 5} cy="84.8" r="1.7" />
             </g>
@@ -254,7 +265,7 @@ function Bear({ tick, fid }) {
         </g></g>
       </g>
       <Fx />
-      <Paws fill={FUR} pad={PEACH} xs={[46, 94]} big beans front={null} />
+      <Paws fill={FUR} pad={PEACH} xs={[46, 94]} big beans arms={fid} front={null} />
     </>
   );
 }
