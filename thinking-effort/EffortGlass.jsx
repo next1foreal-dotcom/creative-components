@@ -90,7 +90,7 @@ export const VOICE_LINES = {
     { src: 'eat-1.mp3', text: "mlah-hama… awhamam~", syl: [{ t: 0.17, s: "mlah-" }, { t: 0.355, s: "ha" }, { t: 0.505, s: "ma… " }, { t: 0.67, s: "a" }, { t: 0.945, s: "wha" }, { t: 1.055, s: "mam~" }] },
   ],
 };
-const VOICE_TICK = ''; // no drag tick by default (opt in with voices={{ tick: 'tick.mp3' }})
+const VOICE_TICK = 'tick.mp3'; // the showcase video's glass tick + kalimba note, pitched up a little per level
 export const VOICE_TEXT = Object.fromEntries(Object.entries(VOICE_LINES).map(([k, v]) => [k, v.map((l) => l.text)]));
 const SAY_MS = 1600; // bubble life (muted); with sound it lasts as long as the line (capped)
 const SAY_EAT_MS = 1100; // the bite's bubble clears before the burp

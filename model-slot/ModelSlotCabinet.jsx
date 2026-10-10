@@ -5,6 +5,7 @@
 // no JACKPOT plate, a coin tray that only pops out on a jackpot. size="lg" is the full 153x48 drawing at 3x for showcases.
 // One rAF loop drives the reel, the lever spring and the coin physics; React only re-renders on commits.
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useImperativeHandle, forwardRef, useId, useMemo } from 'react';
+import SFX_DATA from './model-slot-sfx.js';
 // ---- inlined from src/logos.js
 // Hand-drawn pixel brand marks for the slot reel (no official files shipped).
 // 20x20 grids, 1 cell = 1 CSS px in the 28px chip. '.' = transparent.
@@ -323,15 +324,29 @@ const nowMs = () => (typeof performance !== 'undefined' ? performance.now() : Da
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const useIsoLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-// ---------- tiny WebAudio blips (muted unless `sound`)
+// ---------- sound (muted unless `sound`): the showcase video's casino SFX as tiny embedded samples,
+// with WebAudio blips as a fallback while they decode (or where decoding is unavailable)
 function makeAudio() {
-  let ctx = null;
+  let ctx = null, out = null;
+  const bufs = {};
   const get = () => {
     if (ctx) return ctx;
     const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
     if (!AC) return null;
-    try { ctx = new AC(); } catch (_) { ctx = null; }
+    try { ctx = new AC(); out = ctx.createGain(); out.gain.value = 0.7; out.connect(ctx.destination); } catch (_) { ctx = null; }
+    if (ctx) {
+      for (const [k, url] of Object.entries(SFX_DATA)) {
+        fetch(url).then((r) => r.arrayBuffer()).then((ab) => new Promise((res, rej) => ctx.decodeAudioData(ab, res, rej))).then((b) => { bufs[k] = b; }).catch(() => {});
+      }
+    }
     return ctx;
+  };
+  const play = (k, gain = 1, rate = 1) => {
+    const c = get(); if (!c || !bufs[k]) return false;
+    if (c.state === 'suspended') c.resume().catch(() => {});
+    const src = c.createBufferSource(), g = c.createGain();
+    src.buffer = bufs[k]; src.playbackRate.value = rate; g.gain.value = gain;
+    src.connect(g).connect(out); src.start(); return true;
   };
   const tone = (f, dur, type, gain, at = 0, f2) => {
     const c = get(); if (!c) return;
@@ -341,13 +356,18 @@ function makeAudio() {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
   };
+  let tk = 0;
   return {
-    tick: () => tone(1900, 0.018, 'square', 0.03),
-    ding: () => { tone(1760, 0.32, 'sine', 0.12); tone(2637, 0.22, 'sine', 0.05, 0.004); },
-    coins: () => { for (let i = 0; i < 9; i++) tone(988 * (i % 2 ? 1.335 : 1) * (1 + (i % 3) * 0.06), 0.07, 'square', 0.03, 0.12 + i * 0.07); tone(2093, 0.3, 'triangle', 0.05, 0.05); },
-    clunk: () => { tone(140, 0.09, 'triangle', 0.1, 0, 70); tone(420, 0.03, 'square', 0.03); },
+    warm: () => { get(); },
+    tick: () => { tk = (tk + 1) % 3; play('tick' + tk, 1, 0.98 + Math.random() * 0.04) || tone(1900, 0.018, 'square', 0.03); },
+    ding: () => { play('ding') || (tone(1760, 0.32, 'sine', 0.12), tone(2637, 0.22, 'sine', 0.05, 0.004)); },
+    gold: () => { play('gold') || coinsTone(tone); },
+    star: () => { play('star') || coinsTone(tone); },
+    coins: () => { play('gold') || coinsTone(tone); },
+    clunk: () => { play('clunk') || (tone(140, 0.09, 'triangle', 0.1, 0, 70), tone(420, 0.03, 'square', 0.03)); },
   };
 }
+function coinsTone(tone) { for (let i = 0; i < 9; i++) tone(988 * (i % 2 ? 1.335 : 1) * (1 + (i % 3) * 0.06), 0.07, 'square', 0.03, 0.12 + i * 0.07); tone(2093, 0.3, 'triangle', 0.05, 0.05); }
 
 // ---------- the cabinet drawing (static; lights are animated by CSS, lever + coins by the loop)
 function CabinetArtLg({ u, lever = true }) {
@@ -669,6 +689,13 @@ const ModelSlotCabinet = forwardRef(function ModelSlotCabinet(props, ref) {
   const cur = useRef(current); cur.current = current;
   const audio = useRef(null);
   const snd = (k) => { if (!P.current.sound) return; if (!audio.current) audio.current = makeAudio(); audio.current[k](); };
+  useEffect(() => {   // start decoding the samples as soon as the user gets near (hover/focus/touch), so the first tick is the real one
+    const el = rootRef.current; if (!sound || !el) return;
+    const warm = () => { if (!audio.current) audio.current = makeAudio(); audio.current.warm(); };
+    const evs = ['pointerenter', 'pointerdown', 'focusin'];
+    evs.forEach((e) => el.addEventListener(e, warm, { once: true, passive: true }));
+    return () => evs.forEach((e) => el.removeEventListener(e, warm));
+  }, [sound]);
 
   const commit = useCallback((i, reason) => {
     const m = models[i];
@@ -747,7 +774,7 @@ const ModelSlotCabinet = forwardRef(function ModelSlotCabinet(props, ref) {
     s.fxT0 = now; s.fxUntil = now + 2900;
     if (rootRef.current) rootRef.current.setAttribute('data-jp', theme === 'star' ? 'star' : 'gold');
     pulse('is-jackpot', 2000); pulse('is-tray', 2900); setLights('win', 2000);
-    snd('coins');
+    snd(theme === 'star' ? 'star' : 'gold');
   };
 
   const paintFx = (now, dt) => {

@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import SFX_DATA from './pixel-dialog-sfx.js';
 // ---- sprites (pixel maps)
 // Pixel sprites as character maps. '.' = transparent. Rendered as merged-run SVG rects.
 const PAL = {
@@ -423,22 +424,41 @@ function reducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-// ---- tiny chiptune bleeps (opt-in)
-let AC = null;
-function tone(seq) {
-  if (typeof window === 'undefined') return;
+// ---- 8-bit SFX (opt-in): the showcase video's chiptune sounds as tiny embedded samples,
+// with oscillator bleeps as a fallback while they decode (or where decoding is unavailable)
+let AC = null, OUT = null;
+const BUFS = {};
+function ctx() {
+  if (typeof window === 'undefined') return null;
+  if (AC) return AC;
   try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    let t = AC.currentTime;
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    OUT = AC.createGain(); OUT.gain.value = 0.8; OUT.connect(AC.destination);
+    for (const [k, url] of Object.entries(SFX_DATA)) {
+      fetch(url).then((r) => r.arrayBuffer()).then((ab) => new Promise((res, rej) => AC.decodeAudioData(ab, res, rej))).then((buf) => { BUFS[k] = buf; }).catch(() => {});
+    }
+  } catch (_) { AC = null; }
+  return AC;
+}
+function play(k, at = 0, rate = 1) {
+  const c = ctx(); if (!c || !BUFS[k]) return false;
+  if (c.state === 'suspended') c.resume().catch(() => {});
+  const src = c.createBufferSource(); src.buffer = BUFS[k]; src.playbackRate.value = rate;
+  src.connect(OUT); src.start(c.currentTime + Math.max(0, at)); return true;
+}
+function tone(seq) {
+  const c = ctx(); if (!c) return;
+  try {
+    let t = c.currentTime;
     for (const [f, d, type = 'square', vol = 0.05, f2] of seq) {
-      const o = AC.createOscillator(), g = AC.createGain();
+      const o = c.createOscillator(), g = c.createGain();
       o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + 0.02); t += d * 0.9;
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + 0.02); t += d * 0.9;
     }
   } catch (_) { /* audio unavailable */ }
 }
-const SFX = {
+const BLEEP = {
   type: () => tone([[1320 + Math.random() * 200, 0.025, 'square', 0.025]]),
   send: () => tone([[220, 0.08, 'square', 0.05, 440], [440, 0.22, 'sawtooth', 0.05, 1600]]),
   chest: () => tone([[523, 0.08], [659, 0.08], [784, 0.08], [1047, 0.2]]),
@@ -452,6 +472,24 @@ const SFX = {
   heard: () => tone([[1320, 0.06, 'square', 0.04], [988, 0.06, 'square', 0.04], [1568, 0.14, 'square', 0.04]]),
   konami: () => tone([[784, 0.07], [988, 0.07], [1175, 0.07], [1568, 0.07], [1175, 0.07], [1568, 0.3]]),
 };
+
+let TYPE_N = 0;
+const SFX = {
+  warm: () => { ctx(); },
+  type: () => { TYPE_N = (TYPE_N + 1) % 3; play('type' + TYPE_N) || BLEEP.type(); },
+  menu: () => { play('menu') || BLEEP.type(); },
+  // a spell: charge (stretched to the effort's charge time), flight, impact, timed to the cast's phases
+  cast: ({ tier, charge, fly }) => {
+    const base = [170, 260, 480][tier];
+    if (!play('charge' + tier, 0, Math.min(2, Math.max(0.5, base / charge)))) { (tier === 2 ? BLEEP.meteor : BLEEP.send)(); return; }
+    play('fly' + tier, charge / 1000); play(tier === 2 ? 'boom2' : 'boom', (charge + fly) / 1000);
+  },
+  mp: (n) => { play('mp' + Math.min(3, Math.max(0, n))) || BLEEP.mpup(); },
+};
+for (const k of ['chest', 'clear', 'fizzle', 'party', 'listen', 'heard', 'konami']) SFX[k] = () => { play(k) || BLEEP[k](); };
+SFX.send = () => SFX.cast({ tier: 0, charge: 170, fly: 430 });
+SFX.meteor = () => SFX.cast({ tier: 2, charge: 480, fly: 430 });
+SFX.mpup = BLEEP.mpup; SFX.mpdown = BLEEP.mpdown;
 
 const PixelDialog = forwardRef(function PixelDialog(props, ref) {
   const {
@@ -489,7 +527,13 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
   const idc = useRef(0);
   const later = useCallback((fn, ms) => { const t = setTimeout(() => { timers.current.delete(t); fn(); }, ms); timers.current.add(t); return t; }, []);
   useEffect(() => () => { for (const t of timers.current) clearTimeout(t); }, []);
-  const sfx = (k) => { if (sound) SFX[k](); };
+  const sfx = (k, arg) => { if (sound) SFX[k](arg); };
+  useEffect(() => {   // decode the samples once the user gets near, so the first keystroke already plays the real sound
+    const el = rootRef.current; if (!sound || !el) return;
+    const evs = ['pointerenter', 'pointerdown', 'focusin'];
+    evs.forEach((e) => el.addEventListener(e, SFX.warm, { once: true, passive: true }));
+    return () => evs.forEach((e) => el.removeEventListener(e, SFX.warm));
+  }, [sound]);
 
   const setValue = (v) => { if (!controlled) setInner(v); onChange && onChange(v); };
 
@@ -541,7 +585,7 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
     if (n === effortRef.current) return;
     if (effortProp === undefined) setInnerEffort(efs[n].id);
     onEffortChange && onEffortChange(efs[n].id, efs[n]);
-    sfx(n > effortRef.current ? 'mpup' : 'mpdown');
+    sfx('mp', n);
     setAnnounce(`Thinking effort ${efs[n].label}`);
   }, [efs, effortProp, onEffortChange, sound]);
 
@@ -689,7 +733,7 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
     if (efs) { setMp({ id, phase: 'spend', cost: effortRef.current + 1 }); later(() => setMp((m) => (m && m.id === id ? { ...m, phase: 'refill' } : m)), T.charge + T.fly + T.boom); later(() => setMp((m) => (m && m.id === id ? null : m)), T.charge + T.fly + T.boom + 520); }
     onSend && onSend(text, files.map((f) => f.file || f));
     setPressA(true); later(() => setPressA(false), 140);
-    sfx(tier === 2 ? 'meteor' : 'send');
+    sfx('cast', { tier, charge: T.charge, fly: T.fly });
     if (reducedMotion()) { setValue(''); setFiles([]); setAnnounce('Message sent'); return; }
     setCharge(true);
     setCast({ text, id, files: files.length, phase: 'charge', tier, tokens, effort: effortRef.current });
@@ -791,7 +835,7 @@ const PixelDialog = forwardRef(function PixelDialog(props, ref) {
       <div className={'pd-frame' + (shaking ? ' pd-shaking' : '')}>
         {party ? (
           <button type="button" className="pd-plate pd-plate-btn" aria-haspopup="listbox" aria-expanded={menu} aria-label={`Model: ${cur.name}. Change party member`} disabled={disabled}
-            onClick={() => { setMenu((o) => !o); sfx('type'); }}>{cur.name}<span className="pd-caret" aria-hidden="true">▾</span></button>
+            onClick={() => { setMenu((o) => !o); sfx(menu ? 'type' : 'menu'); }}>{cur.name}<span className="pd-caret" aria-hidden="true">▾</span></button>
         ) : <span className="pd-plate" aria-hidden="true">{name}</span>}
         {menu && party ? (
           <div className="pd-menu" ref={menuRef} role="listbox" aria-label="Party" onKeyDown={onMenuKey}>
