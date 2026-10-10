@@ -90,7 +90,7 @@ export const VOICE_LINES = {
     { src: 'eat-1.mp3', text: "mlah-hama… awhamam~", syl: [{ t: 0.17, s: "mlah-" }, { t: 0.355, s: "ha" }, { t: 0.505, s: "ma… " }, { t: 0.67, s: "a" }, { t: 0.945, s: "wha" }, { t: 1.055, s: "mam~" }] },
   ],
 };
-const VOICE_TICK = 'tick.mp3';
+const VOICE_TICK = ''; // no drag tick by default (opt in with voices={{ tick: 'tick.mp3' }})
 export const VOICE_TEXT = Object.fromEntries(Object.entries(VOICE_LINES).map(([k, v]) => [k, v.map((l) => l.text)]));
 const SAY_MS = 1600; // bubble life (muted); with sound it lasts as long as the line (capped)
 const SAY_EAT_MS = 1100; // the bite's bubble clears before the burp
@@ -128,7 +128,11 @@ function makeVoice() {
     stop() {
       if (!line) return;
       const l = line; line = null;
-      try { l.g.gain.setTargetAtTime(0, ctx.currentTime, 0.03); l.src.stop(ctx.currentTime + 0.12); } catch (_) {}
+      try {
+        const t = ctx.currentTime, gp = l.g.gain;
+        gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.setTargetAtTime(0, t, 0.025);
+        l.src.stop(t + 0.15);
+      } catch (_) {}
     },
     // a full line (stops the previous one) or a short one-shot (`tick`)
     play(url, { gain = 1, rate = 1, tick = false } = {}) {
@@ -136,7 +140,11 @@ function makeVoice() {
       if (!ctx || !b) return false;
       if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(() => {});
       const src = ctx.createBufferSource(), g = ctx.createGain();
-      src.buffer = b; src.playbackRate.value = rate; g.gain.value = gain;
+      src.buffer = b; src.playbackRate.value = rate;
+      // lines fade in over 8 ms so a tightly cut clip never starts with a click
+      const t = ctx.currentTime;
+      if (tick) g.gain.value = gain;
+      else { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.008); }
       src.connect(g); g.connect(out);
       if (!tick) { v.stop(); line = { src, g }; src.onended = () => { if (line && line.src === src) line = null; }; }
       src.start();
