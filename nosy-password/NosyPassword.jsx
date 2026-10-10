@@ -19,229 +19,160 @@ function EyeIcon({ open }) {
   );
 }
 
-// ---- shared drawing helpers -------------------------------------------------------------
-// Outline trick: draw the silhouette pieces once with a thick dark stroke, then again filled on top,
-// so overlapping circles read as one clean inked shape.
-function Blob({ shapes, fill, ink, w = 3 }) {
+// ---- Sanrio-style flat drawing: pure fills, one soft near-black line, bean eyes, pink blush ----
+const INK = '#3a2a24';
+const LW = 2.4;
+const line = { stroke: INK, strokeWidth: LW, strokeLinejoin: 'round', strokeLinecap: 'round' };
+// Union outline: stroke every piece wide underneath, fill them all on top -> one clean silhouette.
+function Blob({ shapes, fill }) {
   const draw = (s, i, extra) => s[0] === 'c'
     ? <circle key={i} cx={s[1]} cy={s[2]} r={s[3]} {...extra} />
     : s[0] === 'e' ? <ellipse key={i} cx={s[1]} cy={s[2]} rx={s[3]} ry={s[4]} {...extra} />
     : <path key={i} d={s[1]} {...extra} />;
   return (
     <>
-      <g>{shapes.map((s, i) => draw(s, i, { fill: ink, stroke: ink, strokeWidth: w, strokeLinejoin: 'round' }))}</g>
-      <g>{shapes.map((s, i) => draw(s, i, { fill: s[5] || (s[0] === 'p' ? s[2] : null) || fill }))}</g>
+      <g>{shapes.map((s, i) => draw(s, i, { fill: INK, stroke: INK, strokeWidth: LW * 2, strokeLinejoin: 'round' }))}</g>
+      <g>{shapes.map((s, i) => draw(s, i, { fill }))}</g>
     </>
   );
 }
-const curl = (x, y, s = 1, col = '#a8683a', o = 0.6) => (
-  <path key={`cu${x}-${y}`} d={`M${x - 3.6 * s} ${y + 1.2 * s} q0 -4.2 ${3.8 * s} -4.2 q3.6 0 3.6 3.4 q0 2.6 -2.6 2.6 q-2 0 -2 -1.8`} fill="none" stroke={col} strokeWidth={1.25} strokeLinecap="round" opacity={o} />
-);
-
-function Eye({ c, x, y }) {
-  const id = c('eye' + x);
+function Eye({ x, y }) {
   return (
     <g className="np-eye">
-      <defs><clipPath id={id}><ellipse cx={x} cy={y} rx="8.2" ry="9" /></clipPath></defs>
-      <g className="np-eyeopen">
-        <ellipse cx={x} cy={y} rx="8.9" ry="9.7" fill="#1b100b" />
-        <g clipPath={`url(#${id})`}>
-          <g className="np-iris">
-            <ellipse cx={x} cy={y + 0.6} rx="6.6" ry="7.4" fill={`url(#${c('iris')})`} />
-            <ellipse cx={x} cy={y + 0.2} rx="3.5" ry="4.1" fill="#0f0805" />
-            <ellipse cx={x + 2.7} cy={y - 3.5} rx="3" ry="3.4" fill="#fff" />
-            <circle cx={x - 2.9} cy={y + 3.3} r="1.45" fill="#fff" />
-            <circle cx={x + 3.4} cy={y + 2.6} r=".8" fill="#fff" opacity=".85" />
-          </g>
-          <path d={`M${x - 6} ${y + 6.4} Q${x} ${y + 9.6} ${x + 6} ${y + 6.4}`} fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.2" />
-        </g>
-      </g>
-      <path className="np-eyesleep" d={`M${x - 7} ${y} Q${x} ${y + 5.5} ${x + 7} ${y}`} />
-      <path className="np-eyehappy" d={`M${x - 7} ${y + 2.5} Q${x} ${y - 5} ${x + 7} ${y + 2.5}`} />
+      <g className="np-eyeopen"><g className="np-iris">
+        <ellipse cx={x} cy={y} rx="3.6" ry="5" fill={INK} />
+        <ellipse cx={x + 1.1} cy={y - 2} rx="1" ry="1.3" fill="#fff" />
+      </g></g>
+      <path className="np-eyesleep" d={`M${x - 5} ${y} Q${x} ${y + 3.6} ${x + 5} ${y}`} />
+      <path className="np-eyehappy" d={`M${x - 5} ${y + 1.6} Q${x} ${y - 3.6} ${x + 5} ${y + 1.6}`} />
     </g>
   );
 }
-function Mouth({ y = 75, ink, tongue = '#ff8a95' }) {
+function Mouth({ y }) {
+  const pink = '#f59bab';
   return (
-    <g className="np-mouths" stroke={ink} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <g className="np-mouths" {...line} strokeWidth="1.9">
       <g className="np-mouth smile">
-        <path d={`M66.6 ${y + 1.2} Q70 ${y + 6.2} 73.4 ${y + 1.2}Z`} fill={tongue} strokeWidth="1" />
-        <path d={`M63.5 ${y} Q66.75 ${y + 4} 70 ${y} Q73.25 ${y + 4} 76.5 ${y}`} fill="none" />
+        <path d={`M65.5 ${y} Q70 ${y + 0.8} 74.5 ${y} Q74 ${y + 7.5} 70 ${y + 8} Q66 ${y + 7.5} 65.5 ${y}Z`} fill="#c94f63" />
+        <path d={`M66.8 ${y + 4.6} Q70 ${y + 2.6} 73.2 ${y + 4.6} Q72.4 ${y + 7.6} 70 ${y + 7.8} Q67.6 ${y + 7.6} 66.8 ${y + 4.6}Z`} fill={pink} stroke="none" />
+        <path d={`M63.6 ${y - 1.2} q.6 1 1.9 1.2 M76.4 ${y - 1.2} q-.6 1 -1.9 1.2`} fill="none" />
       </g>
-      <path className="np-mouth flat" d={`M65 ${y + 2} Q70 ${y + 0.6} 75 ${y + 2}`} fill="none" />
-      <ellipse className="np-mouth oo" cx="71" cy={y + 2.4} rx="2.4" ry="2.8" fill="#7a2f36" strokeWidth="1.1" />
-      <g className="np-mouth gasp"><ellipse cx="70" cy={y + 2.8} rx="3.8" ry="4.6" fill="#6e2730" strokeWidth="1.1" /><ellipse cx="70" cy={y + 5.2} rx="2.3" ry="1.5" fill={tongue} stroke="none" /></g>
+      <path className="np-mouth flat" d={`M66 ${y + 2} Q70 ${y + 0.8} 74 ${y + 2}`} fill="none" />
+      <ellipse className="np-mouth oo" cx="71.5" cy={y + 2.5} rx="2.2" ry="2.6" fill="#c94f63" />
+      <g className="np-mouth gasp"><ellipse cx="70" cy={y + 3.4} rx="3.6" ry="4.6" fill="#c94f63" /><ellipse cx="70" cy={y + 5.6} rx="2.2" ry="1.5" fill={pink} stroke="none" /></g>
     </g>
   );
 }
+const Blush = ({ y = 70, xs = [47, 93] }) => xs.map((x) => <ellipse key={x} className="np-blush" cx={x} cy={y} rx="6.6" ry="3.8" fill="#f9b4c1" />);
 const Fx = () => (
   <>
-    <g className="np-sweat"><path d="M114 25 Q120 34 114 39 Q108 34 114 25Z" fill="#a6dcff" stroke="#4d9ad6" strokeWidth="1.1" /><path d="M112.6 32.5 q.4 -2 1.6 -3" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" fill="none" /></g>
-    <g className="np-notes" fill="#b07f22" stroke="#7a5512" strokeWidth=".5"><text x="112" y="78" className="n1">♪</text><text x="122" y="64" className="n2">♫</text></g>
+    <g className="np-sweat"><path d="M114 25 Q120 34 114 39 Q108 34 114 25Z" fill="#a9dcff" {...line} strokeWidth="1.6" /></g>
+    <g className="np-notes" fill={INK}><text x="112" y="78" className="n1">♪</text><text x="122" y="64" className="n2">♫</text></g>
     <g className="np-z" fill="#8a93a3"><text x="106" y="40" className="z1">z</text><text x="114" y="30" className="z2">z</text></g>
   </>
 );
-function Paws({ c, fill, ink, beans, front }) {
+function Paws({ fill = '#fff', front, xs = [48, 92] }) {
   return (
     <g className="np-turn">
-      <ellipse cx="48" cy="91.5" rx="11" ry="2.6" fill="#3a2a1a" opacity=".13" />
-      <ellipse cx="92" cy="91.5" rx="11" ry="2.6" fill="#3a2a1a" opacity=".13" />
       {front}
-      {[['l', 48], ['r', 92]].map(([s, x]) => (
+      {[['l', xs[0]], ['r', xs[1]]].map(([s, x]) => (
         <g key={s} className={'np-paw ' + s}>
-          <ellipse cx={x} cy="88" rx="10.4" ry="7.4" fill={`url(#${c(fill)})`} stroke={ink} strokeWidth="1.5" />
-          <path d={`M${x - 3.6} 83.8 q-.6 3 0 6.2 M${x + 3.6} 83.8 q.6 3 0 6.2`} stroke={ink} strokeWidth="1.2" strokeLinecap="round" fill="none" opacity=".75" />
-          <ellipse cx={x - 3} cy="84.6" rx="3.6" ry="1.6" fill="#fff" opacity=".35" />
-          {beans && <g fill={beans}><ellipse cx={x - 6.4} cy="91.6" rx="1.7" ry="1.2" /><ellipse cx={x} cy="92.6" rx="1.8" ry="1.2" /><ellipse cx={x + 6.4} cy="91.6" rx="1.7" ry="1.2" /></g>}
+          <ellipse cx={x} cy="88" rx="9.6" ry="7" fill={fill} {...line} />
+          <path d={`M${x - 3} 91 v-3.4 M${x + 3} 91 v-3.4`} {...line} strokeWidth="1.7" fill="none" />
         </g>
       ))}
     </g>
   );
 }
-const Brows = ({ ink, y, xs = [56, 84] }) => (
-  <g className="np-brows" stroke={ink} strokeWidth="1.8" strokeLinecap="round" fill="none">
-    <path className="np-brow l" d={`M${xs[0] - 4.5} ${y + 0.8} Q${xs[0]} ${y - 1.6} ${xs[0] + 4.5} ${y + 0.4}`} />
-    <path className="np-brow r" d={`M${xs[1] - 4.5} ${y + 0.4} Q${xs[1]} ${y - 1.6} ${xs[1] + 4.5} ${y + 0.8}`} />
-  </g>
-);
 
-// ---- Teddy: apricot toy poodle with a polka-dot bow and a bell. Flips its curly ears over its eyes. ----
-const T_HEAD = [['c', 50, 39, 10], ['c', 59, 31.5, 11], ['c', 70, 28.5, 11.8], ['c', 81, 31.5, 11], ['c', 90, 39, 10], ['c', 42, 49, 9.6], ['c', 98, 49, 9.6], ['c', 41, 65, 10.6], ['c', 99, 65, 10.6], ['e', 70, 61, 33, 27]];
-function Teddy({ c, tick }) {
-  const g = (n) => `url(#${c(n)})`;
-  const ear = (s, pts, ox) => (
+// ---- Teddy (original): apricot toy poodle, scalloped curly head, long fluffy ears, pink bow. ----
+function Teddy({ tick, fid }) {
+  const FUR = '#f7d3ae', EAR = '#ecb68c';
+  const ear = (s, d, ox) => (
     <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
       <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
-        <Blob shapes={pts.map(([x, y, r]) => ['c', x, y, r])} fill={g('tEarPuff')} ink="#7d4a26" w={3} />
-        {pts.map(([x, y]) => curl(x - 0.5, y, 0.9, '#8a5430', 0.55))}
-        <ellipse cx={pts[0][0] + (s === 'l' ? 3 : -3)} cy={pts[0][1] + 5} rx="7" ry="3" fill="#6b3d1f" opacity=".18" />
+        <path d={d} fill={EAR} {...line} />
       </g>
     </g>
   );
   return (
     <>
-      <defs>
-        <radialGradient id={c('tPuff')} cx="40%" cy="32%" r="70%"><stop offset="0" stopColor="#f6cc9a" /><stop offset=".55" stopColor="#dca46d" /><stop offset="1" stopColor="#bb8049" /></radialGradient>
-        <radialGradient id={c('tFace')} cx="45%" cy="30%" r="75%"><stop offset="0" stopColor="#f1c18e" /><stop offset=".6" stopColor="#dba26b" /><stop offset="1" stopColor="#c0854e" /></radialGradient>
-        <radialGradient id={c('tEarPuff')} cx="38%" cy="30%" r="75%"><stop offset="0" stopColor="#d49660" /><stop offset=".6" stopColor="#b8784a" /><stop offset="1" stopColor="#965d33" /></radialGradient>
-        <radialGradient id={c('tMuz')} cx="45%" cy="30%" r="75%"><stop offset="0" stopColor="#fff4e6" /><stop offset="1" stopColor="#efcfa9" /></radialGradient>
-        <radialGradient id={c('tPaw')} cx="40%" cy="30%" r="80%"><stop offset="0" stopColor="#f0c393" /><stop offset="1" stopColor="#c98d58" /></radialGradient>
-        <linearGradient id={c('bow')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffc2d3" /><stop offset="1" stopColor="#ff6f98" /></linearGradient>
-        <radialGradient id={c('bell')} cx="35%" cy="30%" r="70%"><stop offset="0" stopColor="#fff3b0" /><stop offset=".5" stopColor="#f2c230" /><stop offset="1" stopColor="#b3830e" /></radialGradient>
-      </defs>
-      <g clipPath={`url(#${c('field')})`}>
+      <g clipPath={`url(#${fid})`}>
         <g className="np-turn"><g className="np-head">
-          <Blob shapes={T_HEAD.slice(0, 9)} fill={g('tPuff')} ink="#8a5530" w={3.2} />
-          <ellipse cx="70" cy="61" rx="33" ry="27" fill={g('tFace')} />
-          {[[50, 38], [59, 30], [70, 26.5], [81, 30], [90, 38], [43, 48], [97, 48]].map(([x, y]) => curl(x, y, 1, '#b0733f', 0.6))}
-          <ellipse cx="62" cy="40" rx="12" ry="5" fill="#fff" opacity=".16" />
-          <ellipse cx="70" cy="86" rx="24" ry="5" fill="#8a5530" opacity=".14" />
-          <path d="M56 70 q-2 -3 0 -6 M84 70 q2 -3 0 -6" stroke="#b97f4b" strokeWidth="1.1" fill="none" opacity=".5" strokeLinecap="round" />
-          <ellipse cx="70" cy="75.5" rx="14.8" ry="10.8" fill={g('tMuz')} stroke="#cf9f70" strokeWidth="1" />
-          <path d="M58 79 l-2 1.5 M82 79 l2 1.5 M60 83 l-1.5 2 M80 83 l1.5 2" stroke="#d2a678" strokeWidth="1" strokeLinecap="round" />
-          <ellipse className="np-blush" cx="45" cy="73" rx="7.5" ry="4.4" fill={g('blush')} />
-          <ellipse className="np-blush" cx="95" cy="73" rx="7.5" ry="4.4" fill={g('blush')} />
-          <Brows ink="#8a5530" y={48.5} />
-          <Eye c={c} x={56} y={61} /><Eye c={c} x={84} y={61} />
-          <path d="M65.2 68.4 Q70 64.8 74.8 68.4 Q75 72.6 70 73.6 Q65 72.6 65.2 68.4Z" fill={g('nose')} stroke="#1c0f08" strokeWidth=".8" />
-          <ellipse cx="68.4" cy="67.8" rx="2" ry="1.1" fill="#fff" opacity=".75" />
-          <Mouth y={75.6} ink="#3b2418" />
-          {ear('l', [[38, 51, 10.2], [35.5, 63.5, 10.8], [36.5, 76, 9.8]], 40)}
-          {ear('r', [[102, 51, 10.2], [104.5, 63.5, 10.8], [103.5, 76, 9.8]], 100)}
+          <Blob fill={FUR} shapes={[['e', 70, 63, 34, 25.5], ['c', 52, 42, 9], ['c', 61, 36.5, 9.5], ['c', 70, 34.5, 10], ['c', 79, 36.5, 9.5], ['c', 88, 42, 9]]} />
+          <path d="M64 40 q3 -3 6 0 q3 -3 6 0" fill="none" {...line} strokeWidth="1.6" />
+          <Blush y={71} xs={[51, 89]} />
+          <Eye x={56} y={62} /><Eye x={84} y={62} />
+          <ellipse cx="70" cy="68.4" rx="3.2" ry="2.3" fill={INK} />
+          <Mouth y={71.6} />
+          {ear('l', 'M42 46 Q33 46 31.5 56 Q28 62 31 68 Q29 75 33.5 80 Q37 86 42.5 83 Q47 80 46 73 Q49 66 46.5 60 Q49 52 42 46Z', 41)}
+          {ear('r', 'M98 46 Q107 46 108.5 56 Q112 62 109 68 Q111 75 106.5 80 Q103 86 97.5 83 Q93 80 94 73 Q91 66 93.5 60 Q91 52 98 46Z', 99)}
           <g className="np-bow">
-            <path d="M86 29 Q80 20 75 22.5 Q73 29 75.5 35.5 Q80 37 86 29Z M86 29 Q92 20 97 22.5 Q99 29 96.5 35.5 Q92 37 86 29Z" fill={g('bow')} stroke="#d4416c" strokeWidth="1.2" strokeLinejoin="round" />
-            <path d="M84 29 q-4 -3 -7 -3 M84 30 q-4 2 -6.6 4 M88 29 q4 -3 7 -3 M88 30 q4 2 6.6 4" stroke="#e05a82" strokeWidth=".9" fill="none" opacity=".8" />
-            <g fill="#fff" opacity=".85"><circle cx="78.4" cy="27" r="1.1" /><circle cx="79" cy="32.6" r="1" /><circle cx="94" cy="27" r="1.1" /><circle cx="93.4" cy="32.6" r="1" /></g>
-            <ellipse cx="86" cy="29.2" rx="3.4" ry="3.8" fill="#ff5c8a" stroke="#d4416c" strokeWidth="1.1" />
-            <ellipse cx="85" cy="27.8" rx="1.2" ry=".8" fill="#fff" opacity=".8" />
+            <path d="M85 32 Q79 24 75.5 26.5 Q74 32 76 37.5 Q80 38.5 85 32Z M85 32 Q91 24 94.5 26.5 Q96 32 94 37.5 Q90 38.5 85 32Z" fill="#ff9fb7" {...line} strokeWidth="2" />
+            <g fill="#fff"><circle cx="79" cy="30" r="1.1" /><circle cx="79.4" cy="34.6" r="1" /><circle cx="91" cy="30" r="1.1" /><circle cx="90.6" cy="34.6" r="1" /></g>
+            <circle cx="85" cy="32" r="3" fill="#ff7f9e" {...line} strokeWidth="2" />
           </g>
         </g></g>
       </g>
       <Fx />
-      <Paws c={c} fill="tPaw" ink="#9b6236" front={
+      <Paws fill={FUR} front={
         <g className="np-bell">
-          <path d="M60 86.5 Q70 90 80 86.5" stroke="#e8536f" strokeWidth="3.4" fill="none" strokeLinecap="round" />
-          <circle cx="70" cy="92" r="4.6" fill={g('bell')} stroke="#9c700c" strokeWidth="1" />
-          <path d="M66.4 92.4 h7.2" stroke="#9c700c" strokeWidth=".9" /><circle cx="70" cy="94.4" r="1" fill="#6b4a06" />
-          <circle cx="68.4" cy="90.2" r="1.1" fill="#fff" opacity=".8" />
+          <circle cx="70" cy="91" r="4.2" fill="#ffd95a" {...line} strokeWidth="2" />
+          <path d="M67 91.6 h6" {...line} strokeWidth="1.5" />
         </g>} />
     </>
   );
 }
 
-// ---- Corgi: fox-orange, white blaze, red bandana. Turns round and shows you its butt. ----
-function Corgi({ c, tick }) {
-  const g = (n) => `url(#${c(n)})`;
-  const ear = (s, d, inner, tufts, ox) => (
+// ---- Corgi (original): orange and white, big pointy ears, red bandana. Turns round and shows its butt. ----
+function Corgi({ tick, fid }) {
+  const OR = '#f6ad62', WH = '#fff', IN = '#ffc9cf';
+  const ear = (s, d, inner, ox) => (
     <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
       <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
-        <path d={d} fill={g('cEar')} stroke="#a85a1c" strokeWidth="2.4" strokeLinejoin="round" />
-        <path d={inner} fill={g('cEarIn')} />
-        <path d={tufts} stroke="#fff8ef" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        <path d={d} fill={OR} {...line} /><path d={inner} fill={IN} />
       </g>
     </g>
   );
-  const head = [['e', 70, 61, 35, 27.5]];
   return (
     <>
-      <defs>
-        <radialGradient id={c('cFur')} cx="42%" cy="28%" r="78%"><stop offset="0" stopColor="#ffc47a" /><stop offset=".55" stopColor="#f2a04a" /><stop offset="1" stopColor="#d47b2b" /></radialGradient>
-        <linearGradient id={c('cEar')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#d9792a" /><stop offset="1" stopColor="#f5a752" /></linearGradient>
-        <linearGradient id={c('cEarIn')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f6a69a" /><stop offset="1" stopColor="#ffd7cf" /></linearGradient>
-        <radialGradient id={c('cWhite')} cx="45%" cy="30%" r="75%"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#f3e3cf" /></radialGradient>
-        <radialGradient id={c('cPaw')} cx="40%" cy="30%" r="80%"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#ead8c2" /></radialGradient>
-        <linearGradient id={c('band')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff5a4e" /><stop offset="1" stopColor="#c8261f" /></linearGradient>
-      </defs>
-      <g clipPath={`url(#${c('field')})`}>
+      <g clipPath={`url(#${fid})`}>
         <g className="np-front"><g className="np-turn"><g className="np-head">
-          {ear('l', 'M36 54 Q33 28 39 13 Q43 8 48.5 13 Q58 25 65 41 Z', 'M41.5 46 Q40 29 43.5 19.5 Q52 30 57.5 41 Z', 'M44 44 l2 -6 M48 45 l1 -6 M52 45 l-.4 -5', 50)}
-          {ear('r', 'M104 54 Q107 28 101 13 Q97 8 91.5 13 Q82 25 75 41 Z', 'M98.5 46 Q100 29 96.5 19.5 Q88 30 82.5 41 Z', 'M96 44 l-2 -6 M92 45 l-1 -6 M88 45 l.4 -5', 90)}
-          <Blob shapes={head} fill={g('cFur')} ink="#a85a1c" w={3} />
-          <path d="M36 66 l-3 3 l4 0 l-2 4 l5 -1 M104 66 l3 3 l-4 0 l2 4 l-5 -1" fill="#f2a04a" stroke="#a85a1c" strokeWidth="1.4" strokeLinejoin="round" />
-          <path d="M65.5 33.6 Q70 31.4 74.5 33.6 Q77.5 46 80.6 58.5 Q70 63.5 59.4 58.5 Q62.5 46 65.5 33.6Z" fill={g('cWhite')} />
-          <path d="M68 35.5 l1 -3 M70.4 35 l.4 -3.2 M72.6 35.6 l1 -2.6" stroke="#d47b2b" strokeWidth="1" strokeLinecap="round" opacity=".6" />
-          <path d="M44 74 Q42 68 48 66 Q56 64 62 66.5 Q70 62 78 66.5 Q84 64 92 66 Q98 68 96 74 Q99 79 94 82 Q93 87 86 87 Q78 90 70 89 Q62 90 54 87 Q47 87 46 82 Q41 79 44 74Z" fill={g('cWhite')} stroke="#e6cfb4" strokeWidth=".8" />
-          <path d="M47 82 l-3 1.6 M93 82 l3 1.6 M50 86 l-2 2 M90 86 l2 2" stroke="#e2c9ac" strokeWidth="1" strokeLinecap="round" />
-          <ellipse cx="58" cy="40" rx="11" ry="4.6" fill="#fff" opacity=".2" transform="rotate(-14 58 40)" />
-          <ellipse className="np-blush" cx="45" cy="72" rx="7.5" ry="4.4" fill={g('blush')} />
-          <ellipse className="np-blush" cx="95" cy="72" rx="7.5" ry="4.4" fill={g('blush')} />
-          <Brows ink="#a85a1c" y={47.5} xs={[55, 85]} />
-          <Eye c={c} x={55} y={60} /><Eye c={c} x={85} y={60} />
-          <path d="M64.6 67.6 Q70 63.6 75.4 67.6 Q75.6 72.4 70 73.4 Q64.4 72.4 64.6 67.6Z" fill={g('nose')} stroke="#120a06" strokeWidth=".8" />
-          <ellipse cx="67.8" cy="67" rx="2.1" ry="1.1" fill="#fff" opacity=".75" />
-          <Mouth y={75} ink="#2b211c" />
+          {ear('l', 'M38 54 Q34 30 40 16 Q44 11 49 16 Q57 27 64 42Z', 'M43.5 46 Q42 31 44.5 22.5 Q51.5 31.5 56.5 41.5Z', 50)}
+          {ear('r', 'M102 54 Q106 30 100 16 Q96 11 91 16 Q83 27 76 42Z', 'M96.5 46 Q98 31 95.5 22.5 Q88.5 31.5 83.5 41.5Z', 90)}
+          <Blob fill={OR} shapes={[['e', 70, 63, 35, 25.5]]} />
+          <path d="M66 38.2 Q70 37 74 38.2 Q76.5 50 79.5 60 Q86 62 92 67 Q95 74 90 80 Q82 87.6 70 87.6 Q58 87.6 50 80 Q45 74 48 67 Q54 62 60.5 60 Q63.5 50 66 38.2Z" fill={WH} />
+          <Blush y={71} xs={[46, 94]} />
+          <Eye x={55} y={61} /><Eye x={85} y={61} />
+          <ellipse cx="70" cy="67.6" rx="3.6" ry="2.6" fill={INK} />
+          <Mouth y={71} />
         </g></g></g>
         <g className="np-back">
           <g className="np-peekhead">
-            <path d="M100 46 Q99 27 105 19 Q109 25 115 40Z" fill={g('cEar')} stroke="#a85a1c" strokeWidth="1.8" strokeLinejoin="round" />
-            <path d="M102.5 41 Q102.5 29 105.5 24 Q109 30 111.5 38Z" fill={g('cEarIn')} />
-            <ellipse cx="103" cy="56" rx="15.5" ry="13.5" fill={g('cFur')} stroke="#a85a1c" strokeWidth="2.2" />
-            <path d="M88 60 Q92 66 100 66 Q106 66 108 70 Q98 72 90 68Z" fill={g('cWhite')} />
-            <ellipse cx="100.5" cy="55" rx="5" ry="5.6" fill="#1b100b" /><ellipse cx="101.8" cy="53" rx="2" ry="2.3" fill="#fff" /><circle cx="99" cy="57.4" r=".9" fill="#fff" />
-            <path d="M95.4 49 q3.4 -2 6.6 -.4" stroke="#a85a1c" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-            <ellipse cx="89" cy="62" rx="3" ry="2.3" fill="#24140d" />
+            <path d="M100 47 Q99 28 105 20 Q109 26 115 41Z" fill={OR} {...line} />
+            <path d="M102.6 42 Q102.6 30 105.4 25 Q108.6 31 111.4 39Z" fill={IN} />
+            <ellipse cx="103" cy="57" rx="15" ry="13" fill={OR} {...line} />
+            <path d="M89 62 Q93 67 101 66.6 Q107 66.6 109 70 Q99 72.6 91 68.6Z" fill={WH} />
+            <ellipse cx="100" cy="56" rx="3.3" ry="4.6" fill={INK} /><ellipse cx="101" cy="54.2" rx="1" ry="1.3" fill="#fff" />
+            <ellipse cx="90" cy="62" rx="2.4" ry="1.8" fill={INK} />
+            <ellipse cx="104" cy="65" rx="4" ry="2.4" fill="#f9b4c1" />
           </g>
           <g className="np-buttwrap">
-            <Blob shapes={[['c', 55.5, 72, 21.5], ['c', 84.5, 72, 21.5], ['e', 70, 84, 35.5, 14]]} fill={g('cFur')} ink="#a85a1c" w={3} />
-            <ellipse cx="50" cy="62" rx="8" ry="5" fill="#fff" opacity=".22" transform="rotate(-30 50 62)" />
-            <ellipse cx="80" cy="61" rx="7" ry="4.4" fill="#fff" opacity=".18" transform="rotate(-25 80 61)" />
-            <path d="M70 57 Q71.4 66 70 75" stroke="#b5651f" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-            <path d="M43 89 Q44 80 50 78 l-1 -3 l4 2 Q58 73 63 76 l1 -3 l2.4 3 Q70 71 74 76 l2.4 -3 l1 3 Q82 73 87 77 l4 -2 l-1 3 Q96 80 97 89Z" fill={g('cWhite')} stroke="#e2c9ac" strokeWidth="1" strokeLinejoin="round" />
-            <g className="np-nub">
-              <path d="M64 55 Q63 46 70 45 Q77 46 76 55 Q73 57.5 70 57 Q67 57.5 64 55Z" fill={g('cWhite')} stroke="#e2c9ac" strokeWidth="1.1" />
-              <path d="M67.4 47.6 l-1 -2.6 M70 46.8 v-2.8 M72.6 47.6 l1 -2.6" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" />
-            </g>
+            <Blob fill={OR} shapes={[['c', 55.5, 73, 21], ['c', 84.5, 73, 21], ['e', 70, 85, 35, 13]]} />
+            <path d="M70 60 Q71.2 67 70 74" fill="none" {...line} strokeWidth="1.9" />
+            <path d="M44.5 90 Q47 79 57 77.6 Q64 77 70 80 Q76 77 83 77.6 Q93 79 95.5 90Z" fill={WH} />
+            <g className="np-nub"><ellipse cx="70" cy="52.5" rx="6" ry="5.6" fill={WH} {...line} /></g>
           </g>
         </g>
       </g>
       <Fx />
-      <g className="np-front"><Paws c={c} fill="cPaw" ink="#cdb69b" beans="#f2a9a0" front={
+      <g className="np-front"><Paws front={
         <g>
-          <path d="M57 85.5 Q70 89.5 83 85.5 L70 97.5Z" fill={g('band')} stroke="#9c1a14" strokeWidth="1.1" strokeLinejoin="round" />
-          <g fill="#fff" opacity=".9"><circle cx="64" cy="89" r="1" /><circle cx="70" cy="91.5" r="1" /><circle cx="76" cy="89" r="1" /><circle cx="70" cy="95" r=".8" /></g>
+          <path d="M58 86 Q70 89.6 82 86 L70 96.5Z" fill="#ff6b5e" {...line} strokeWidth="2" />
+          <g fill="#fff"><circle cx="64.5" cy="89.4" r="1" /><circle cx="75.5" cy="89.4" r="1" /><circle cx="70" cy="92.6" r="1" /></g>
         </g>} /></g>
       <g className="np-back np-backpaws">
-        {[50, 90].map((x) => <g key={x}><ellipse cx={x} cy="91.5" rx="10.5" ry="2.4" fill="#3a2a1a" opacity=".12" /><ellipse cx={x} cy="88" rx="9.8" ry="6.8" fill={g('cPaw')} stroke="#cdb69b" strokeWidth="1.5" /><ellipse cx={x - 2.6} cy="85.4" rx="3.4" ry="1.5" fill="#fff" opacity=".6" /></g>)}
+        {[50, 90].map((x) => <ellipse key={x} cx={x} cy="88" rx="9.4" ry="6.6" fill={WH} {...line} />)}
       </g>
     </>
   );
@@ -249,17 +180,12 @@ function Corgi({ c, tick }) {
 
 const ANIMALS = { teddy: Teddy, corgi: Corgi };
 function Art({ animal, uid, px, py, tick }) {
-  const c = (n) => `${uid}-${n}`;
   const A = ANIMALS[animal] || Teddy;
+  const fid = `${uid}-field`;
   return (
     <svg className="np-art" viewBox="0 0 140 100" aria-hidden="true" focusable="false" style={{ '--px': px + 'px', '--py': py + 'px' }}>
-      <defs>
-        <clipPath id={c('field')}><rect x="-40" y="-60" width="220" height="148" /></clipPath>
-        <linearGradient id={c('iris')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1e120c" /><stop offset=".55" stopColor="#4a2a18" /><stop offset="1" stopColor="#9a6034" /></linearGradient>
-        <radialGradient id={c('blush')}><stop offset="0" stopColor="#ff8a9a" stopOpacity=".95" /><stop offset="1" stopColor="#ff8a9a" stopOpacity="0" /></radialGradient>
-        <radialGradient id={c('nose')} cx="40%" cy="30%" r="70%"><stop offset="0" stopColor="#6b4a3a" /><stop offset="1" stopColor="#1a0d07" /></radialGradient>
-      </defs>
-      <A c={c} tick={tick} />
+      <defs><clipPath id={fid}><rect x="-40" y="-60" width="220" height="148" /></clipPath></defs>
+      <A tick={tick} fid={fid} />
     </svg>
   );
 }
