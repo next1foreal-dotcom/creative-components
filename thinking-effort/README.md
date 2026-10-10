@@ -82,7 +82,7 @@ Attributes match the props in kebab-case (`easter-eggs`, `levels` and `voices` a
 | `zombie` | boolean | `true` | Turn the zombie off. Over-pull then just rubber-bands, and `←` at Low gives the knob a small bump. |
 | `easterEggs` | boolean | `true` | The zombie's sneak-up gag at Medium, High and Extra. Always off with `prefers-reduced-motion`. (The Low nap, bubble and pop are part of the Low look, not an easter egg.) |
 | `sound` | boolean | `false` | The zombie's voice: Crazy-Dave-style gibberish (see [Voice](#voice)). Off by default. Nothing is created or downloaded until it is on, and nothing plays before the user touches the slider. |
-| `voices` | `{ [look]: string[], eat?: string[], tick?: string }` | built-in set | Replace any of the lines. Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` the short drag syllable. Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
+| `voices` | `{ [look]: (string \| { src, text, syl })[], eat?: …, tick?: string }` | built-in set | Replace any of the lines (a URL keeps the built-in words and timing for that slot; an object brings its own). Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` the short drag syllable. Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
 | `voiceBase` | string | `'media/voice/'` | Where the built-in files live, relative to the page. With a bundler, copy `media/voice/` into your public folder and point this at it (e.g. `'/effort-voice/'`). |
 | `volume` | number | `0.8` | Voice volume, 0–1. |
 | `onChange` | `(index, level) => void` | – | Fired when a new level is committed: on release, a tap, a key press, a label click, or Reset. |
@@ -117,25 +117,26 @@ Every character value is a smooth function of the knob's *live* position (in lev
 
 ### Voice
 
-With `sound` on, the zombie talks in Crazy-Dave-style gibberish, one short line per level, recorded by [@nextoneforeal](https://x.com/nextoneforeal):
+With `sound` on, the zombie talks in Crazy-Dave-style gibberish, recorded by [@nextoneforeal](https://x.com/nextoneforeal). The speech bubble shows the words he actually says and **types them syllable by syllable in time with the audio**:
 
-| Look | Line | Bubble |
-|---|---|---|
-| Low | sleepy mumble | *brainz… wabba… zzz* |
-| Medium | curious, rising | *wabibabo?* |
-| High | steady muttering | *bababoyi!* |
-| Extra | shout | *waba-BOOYI!!* |
-| Max | fast chatter | *wabawabawaba-bibo!* |
-| Big Brain | a scream that falls and fades as he runs off | *BABOOOOO~* |
-| Bite (over-pull) | *nom nom* | *nom nom… wabibabo~* |
+| Look | Lines (what he says) |
+|---|---|
+| Low · sleepy (a soft, silent *zzz* trails each line) | *deh-eh pfeza… tamit-mand… zzz* · *bladi-gadi… zzz* |
+| Medium · curious | **Wabi-babu!** (歪比巴卜, the signature line) · *Bladni-vavi?* |
+| High · on it | *Omai vabo, bada-bada!* · *Wabi-babu!!* |
+| Extra · shout | *CHA-LONG-NAO!!* · *Belkam-fila lode-BLALAK!* |
+| Max · fast chatter | *nödeeb-vitha-demut-ferverb-tap!* · *bedude-dvedjeb-zibga-vavevol!* |
+| Big Brain · screams as he runs (fades out) | *NE-FAAA-FUUU-EEET!* · *CHAAA-LE-NAOOO~!* |
+| Bite (over-pull) · munching | *mlah-hama… awhamam~* |
 
-- While you drag, each detent plays only a tiny syllable whose pitch rises with the level. When the knob **settles** on a level (after ~140 ms of rest) the zombie says one full line. A new line always cuts off the previous one, and leaving a level cuts its line short.
+- While you drag, each detent plays only a tiny syllable (the "ba" of *Wabi-babu*) whose pitch rises with the level. When the knob **settles** on a level (after ~140 ms of rest) the zombie says one full line. A new line always cuts off the previous one, and leaving a level cuts its line short.
+- The first line a level says is its first take, so the first thing you usually hear is **Wabi-babu!** at Medium. After that the takes alternate, never the same one twice in a row.
 - The Big Brain scream starts the moment the zombie bolts, so it stays in sync with the run-away, and it doesn't repeat when the knob lands. The bite line plays on the crunch, and there is no Low line while the brain is gone.
-- Each look has 2–3 takes, picked at random but never the same take twice in a row.
-- Audio is Web Audio, created lazily: the context is unlocked on the first pointer or key press on the slider (autoplay rules), and the ~200 KB of mono MP3s are fetched only once `sound` is on.
-- A speech bubble shows the line above the zombie's head **even when muted**, for about 1.6 s (or as long as the line). It stays inside the card and never covers the knob. With `prefers-reduced-motion` it only fades.
+- Every line carries its syllable onsets (`VOICE_LINES` export: `{ src, text, syl: [{ t, s }] }`, `t` in seconds into the file; a syllable with `z: 1` is typed but not spoken, like Low's trailing *zzz*). The bubble starts typing the moment the audio starts, and **types at the same pace when muted**. The full line reserves the bubble's width, so it never jumps while typing. With `voices` you can pass plain URLs (they keep the built-in words and timing for that slot) or your own `{ src, text, syl }` objects.
+- Audio is Web Audio, created lazily: the context is unlocked on the first pointer or key press on the slider (autoplay rules), and the ~300 KB of MP3s are fetched only once `sound` is on.
+- The bubble sits above the zombie's head, stays inside the card and never covers the knob: it slides to the knob's right, or lifts over it when there is no room. With `prefers-reduced-motion` it only fades (syllables still appear on time, without the pop).
 
-The files in `media/voice/` are the creator's own recordings, pitched up about 4 semitones with formants kept, sped up a little, with a nasal EQ and a light vibrato, loudness-normalised to about −16 LUFS.
+The files in `media/voice/` are the creator's own raw takes, cut at natural pauses, with only a gentle 80 Hz high-pass, light noise reduction, short fades and loudness normalisation to −16 LUFS (true peak ≤ −1.5 dBTP). The two Max lines come from the cleanest take and skip noise reduction: just the high-pass, a gentle peak compressor and −17 LUFS, so the limiter never has to touch them. No pitch shift or effects. MP3 128 kb/s, 48 kHz mono.
 
 ### Easter egg
 

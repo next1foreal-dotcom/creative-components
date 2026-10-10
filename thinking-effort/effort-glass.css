@@ -546,8 +546,18 @@
   border: 1.5px solid #2b2f3a;
   box-shadow: 2px 2px 0 rgba(43, 47, 58, .18), inset 0 1px 0 #fff;
   transform-origin: var(--eg-tail) 130%;
-  animation: eg-say-pop .42s cubic-bezier(.3, 1.7, .5, 1) both;
+  visibility: hidden; /* until the first syllable is spoken */
 }
+.eg-say-in.live { visibility: visible; animation: eg-say-pop .42s cubic-bezier(.3, 1.7, .5, 1) both; }
+.eg-say .eg-say-in.long { font-size: 10.5px; letter-spacing: 0; padding: 4px 8px 5px; }
+/* typed along with the voice: each syllable appears at its onset in the audio (the full line reserves the width) */
+.eg-syl { opacity: 0; display: inline-block; white-space: pre; }
+.eg-syl.on { opacity: 1; animation: eg-syl-in .16s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes eg-syl-in { from { opacity: 0; transform: translateY(3px) scale(.7); } to { opacity: 1; transform: none; } }
+/* Low: a soft, silent "zzz" drifts in after the last spoken syllable */
+.eg-syl.eg-syl-z { font-size: .82em; font-weight: 700; letter-spacing: .06em; color: #8a94b8; }
+.eg-syl.eg-syl-z.on { opacity: .85; animation: eg-syl-z-in .7s var(--ease-out, ease-out) both; }
+@keyframes eg-syl-z-in { from { opacity: 0; transform: translate(-2px, 2px); } to { opacity: .85; transform: none; } }
 /* pixel tail: two stacked squares under the bubble, pointing at the zombie's head */
 .eg-say-in::before, .eg-say-in::after {
   content: ""; position: absolute; left: var(--eg-tail); background: inherit;
@@ -561,24 +571,28 @@
   100% { transform: none; opacity: 1; }
 }
 /* per look */
-.eg-say-0 .eg-say-in { font-style: italic; font-weight: 700; color: #4c5878; background: linear-gradient(180deg, rgba(240, 243, 255, .93), rgba(226, 232, 252, .86)); animation-duration: .6s; animation-timing-function: var(--ease-out); }
+.eg-say-0 .eg-say-in { font-style: italic; font-weight: 700; color: #4c5878; background: linear-gradient(180deg, rgba(240, 243, 255, .93), rgba(226, 232, 252, .86)); }
+.eg-say-0 .eg-say-in.live { animation-duration: .6s; animation-timing-function: var(--ease-out); }
 .eg-say-0 .eg-say-in::before, .eg-say-0 .eg-say-in::after { background: #e2e8fc; }
 .eg-say-0 .eg-say-in::before { box-shadow: 0 -1.5px 0 #e2e8fc; }
 .eg-say-1 .eg-say-in { color: #3d4a2a; }
 .eg-say-3 .eg-say-in { font-size: 12.5px; color: #8a2a12; letter-spacing: .02em; }
-.eg-say-4 .eg-say-in { color: #8f1f17; background: linear-gradient(180deg, rgba(255, 246, 236, .95), rgba(255, 228, 210, .88)); animation: eg-say-pop .32s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-jit .09s steps(2) .32s infinite; }
+.eg-say-4 .eg-say-in { color: #8f1f17; background: linear-gradient(180deg, rgba(255, 246, 236, .95), rgba(255, 228, 210, .88)); }
+.eg-say-4 .eg-say-in.live { animation: eg-say-pop .32s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-jit .09s steps(2) .32s infinite; }
 .eg-say-4 .eg-say-in::before, .eg-say-4 .eg-say-in::after { background: #ffe4d2; }
 .eg-say-4 .eg-say-in::before { box-shadow: 0 -1.5px 0 #ffe4d2; }
 @keyframes eg-say-jit { 50% { transform: translate(.6px, -.5px) rotate(-.6deg); } }
-.eg-say-5 .eg-say-in { font-size: 13px; letter-spacing: .03em; color: #e8337a; background: linear-gradient(180deg, rgba(255, 252, 236, .95), rgba(255, 240, 200, .88)); animation: eg-say-pop .3s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-flee 1.9s cubic-bezier(.5, 0, .9, .6) .45s both; }
+.eg-say-5 .eg-say-in { font-size: 13px; letter-spacing: .03em; color: #e8337a; background: linear-gradient(180deg, rgba(255, 252, 236, .95), rgba(255, 240, 200, .88)); }
+.eg-say-5 .eg-say-in.live { animation: eg-say-pop .3s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-flee 2.1s cubic-bezier(.5, 0, .9, .6) .9s both; }
 .eg-say-5 .eg-say-in::before, .eg-say-5 .eg-say-in::after { background: #fff0c8; }
 .eg-say-5 .eg-say-in::before { box-shadow: 0 -1.5px 0 #fff0c8; }
 /* Big Brain: the scream trails off to the right as he runs */
 @keyframes eg-say-flee { to { transform: translateX(10px) scale(.9); opacity: .25; } }
-.eg-say-eat .eg-say-in { color: #5f8a2c; font-style: italic; animation: eg-say-pop .36s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-chew .32s ease-in-out .36s 2; }
+.eg-say-eat .eg-say-in { color: #5f8a2c; font-style: italic; }
+.eg-say-eat .eg-say-in.live { animation: eg-say-pop .36s cubic-bezier(.3, 1.7, .5, 1) both, eg-say-chew .32s ease-in-out .36s 2; }
 @keyframes eg-say-chew { 50% { transform: translateY(1.5px) scaleY(.94); } }
 @media (prefers-reduced-motion: reduce) {
   /* only a fade */
   .eg-root .eg-say { transition: opacity .25s ease-out !important; }
-  .eg-root .eg-say-in { animation: none !important; transform: none !important; }
+  .eg-root .eg-say-in, .eg-root .eg-syl { animation: none !important; transform: none !important; }
 }

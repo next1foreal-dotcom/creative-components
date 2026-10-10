@@ -54,28 +54,44 @@ const MUNCH_BURP = 1180; // …then burps…
 const MUNCH_END = 2150; // …then idles
 
 /* ---------- voice (opt-in `sound`) ----------
-   Crazy-Dave-style gibberish, recorded by @nextoneforeal. Keys 0..5 are the six
-   design looks (Low … Big Brain), `eat` is the over-pull bite, `tick` the tiny
-   syllable played per detent while dragging. Each line has a speech-bubble text. */
-const VOICE_FILES = {
-  0: ['l0-1.mp3', 'l0-2.mp3', 'l0-3.mp3'],
-  1: ['l1-1.mp3', 'l1-2.mp3', 'l1-3.mp3'],
-  2: ['l2-1.mp3', 'l2-2.mp3', 'l2-3.mp3'],
-  3: ['l3-1.mp3', 'l3-2.mp3', 'l3-3.mp3'],
-  4: ['l4-1.mp3', 'l4-2.mp3', 'l4-3.mp3'],
-  5: ['l5-1.mp3', 'l5-2.mp3', 'l5-3.mp3'],
-  eat: ['eat-1.mp3', 'eat-2.mp3'],
-  tick: 'tick.mp3',
+   Crazy-Dave-style gibberish, recorded by @nextoneforeal (his raw takes, lightly cleaned, no pitch shift).
+   Keys 0..5 are the six design looks (Low … Big Brain), `eat` is the over-pull bite, `tick` the tiny
+   syllable played per detent while dragging. Each line carries the words actually said and the
+   onset (seconds into the file) of every syllable, so the speech bubble types along with the audio
+   (and at the same pace when muted). The first line a level says is its first entry: Medium opens
+   with the signature "Wabi-babu!" (歪比巴卜). A syllable with `z: 1` is typed but not spoken (Low's
+   sleepy " zzz" after the last word). */
+export const VOICE_LINES = {
+  0: [
+    { src: 'l0-1.mp3', text: "deh-eh pfeza… tamit-mand… zzz", syl: [{ t: 0.175, s: "deh" }, { t: 0.32, s: "-eh " }, { t: 0.49, s: "pfe" }, { t: 0.58, s: "za… " }, { t: 0.735, s: "ta" }, { t: 0.91, s: "mit-" }, { t: 1.2, s: "mand…" }, { t: 1.5, s: " zzz", z: 1 }] },
+    { src: 'l0-2.mp3', text: "bladi-gadi… zzz", syl: [{ t: 0.075, s: "bla" }, { t: 0.215, s: "di-" }, { t: 0.325, s: "ga" }, { t: 0.52, s: "di…" }, { t: 0.82, s: " zzz", z: 1 }] },
+  ],
+  1: [
+    { src: 'l1-1.mp3', text: "Wabi-babu!", syl: [{ t: 0.02, s: "Wa" }, { t: 0.225, s: "bi-" }, { t: 0.395, s: "ba" }, { t: 0.64, s: "bu!" }] },
+    { src: 'l1-2.mp3', text: "Bladni-vavi?", syl: [{ t: 0.175, s: "Bla" }, { t: 0.305, s: "dni-" }, { t: 0.46, s: "va" }, { t: 0.6, s: "vi?" }] },
+  ],
+  2: [
+    { src: 'l2-1.mp3', text: "Omai vabo, bada-bada!", syl: [{ t: 0.02, s: "O" }, { t: 0.135, s: "mai " }, { t: 0.295, s: "va" }, { t: 0.42, s: "bo, " }, { t: 0.56, s: "ba" }, { t: 0.715, s: "da-" }, { t: 0.885, s: "ba" }, { t: 1.0, s: "da!" }] },
+    { src: 'l2-2.mp3', text: "Wabi-babu!!", syl: [{ t: 0.245, s: "Wa" }, { t: 0.475, s: "bi-" }, { t: 0.6, s: "ba" }, { t: 0.86, s: "bu!!" }] },
+  ],
+  3: [
+    { src: 'l3-1.mp3', text: "CHA-LONG-NAO!!", syl: [{ t: 0.09, s: "CHA-" }, { t: 0.26, s: "LONG-" }, { t: 0.49, s: "NAO!!" }] },
+    { src: 'l3-2.mp3', text: "Belkam-fila lode-BLALAK!", syl: [{ t: 0.135, s: "Bel" }, { t: 0.4, s: "kam-" }, { t: 0.61, s: "fi" }, { t: 0.65, s: "la " }, { t: 0.915, s: "lo" }, { t: 0.985, s: "de-" }, { t: 1.12, s: "BLA" }, { t: 1.285, s: "LAK!" }] },
+  ],
+  4: [
+    { src: 'l4-1.mp3', text: "nödeeb-vitha-demut-ferverb-tap!", syl: [{ t: 0.035, s: "nö" }, { t: 0.19, s: "de" }, { t: 0.34, s: "eb-" }, { t: 0.485, s: "vi" }, { t: 0.625, s: "tha-" }, { t: 0.76, s: "de" }, { t: 0.905, s: "mut-" }, { t: 1.12, s: "fer" }, { t: 1.21, s: "verb-" }, { t: 1.41, s: "tap!" }] },
+    { src: 'l4-2.mp3', text: "bedude-dvedjeb-zibga-vavevol!", syl: [{ t: 0.07, s: "be" }, { t: 0.235, s: "du" }, { t: 0.385, s: "de-" }, { t: 0.53, s: "dve" }, { t: 0.69, s: "djeb-" }, { t: 1.05, s: "zib" }, { t: 1.17, s: "ga-" }, { t: 1.365, s: "va" }, { t: 1.48, s: "ve" }, { t: 1.7, s: "vol!" }] },
+  ],
+  5: [
+    { src: 'l5-1.mp3', text: "NE-FAAA-FUUU-EEET!", syl: [{ t: 0.02, s: "NE-" }, { t: 0.175, s: "FAAA-" }, { t: 0.46, s: "FUUU-" }, { t: 0.865, s: "EEET!" }] },
+    { src: 'l5-2.mp3', text: "CHAAA-LE-NAOOO~!", syl: [{ t: 0.185, s: "CHAAA-" }, { t: 0.41, s: "LE-" }, { t: 0.625, s: "NAOOO~!" }] },
+  ],
+  eat: [
+    { src: 'eat-1.mp3', text: "mlah-hama… awhamam~", syl: [{ t: 0.17, s: "mlah-" }, { t: 0.355, s: "ha" }, { t: 0.505, s: "ma… " }, { t: 0.67, s: "a" }, { t: 0.945, s: "wha" }, { t: 1.055, s: "mam~" }] },
+  ],
 };
-export const VOICE_TEXT = {
-  0: ['brainz… wabba… zzz', 'wabba… mmh… zzz', 'brainz… zzz…'],
-  1: ['wabibabo?', 'baba…bo?', 'wabi-bo?'],
-  2: ['bababoyi!', 'wabba-bo!', 'babo, babo!'],
-  3: ['waba-BOOYI!!', 'BABA-bo!!', 'wabi-BABO!!'],
-  4: ['wabawabawaba-bibo!', 'babababa-boyi!', 'wabbawabba!!'],
-  5: ['BABOOOOO~', 'WABAAAAA~!', 'BOYIIIII~!'],
-  eat: ['nom nom… wabibabo~', 'nom… bababo~'],
-};
+const VOICE_TICK = 'tick.mp3';
+export const VOICE_TEXT = Object.fromEntries(Object.entries(VOICE_LINES).map(([k, v]) => [k, v.map((l) => l.text)]));
 const SAY_MS = 1600; // bubble life (muted); with sound it lasts as long as the line (capped)
 const SAY_EAT_MS = 1100; // the bite's bubble clears before the burp
 const SETTLE_DEBOUNCE = 140; // ms the knob must rest on a level before it speaks
@@ -130,14 +146,24 @@ function makeVoice() {
   };
   return v;
 }
+// → { tick: url, 0: [{ url, text, syl }], … }. A custom entry may be a url (it keeps the default line's
+// words and timing for that slot) or { src, text, syl } with its own.
 function voiceUrls(voices, base) {
   const b = base == null ? '' : base;
   const abs = (u) => (/^(https?:|data:|blob:|\/)/.test(u) ? u : b + u);
   const m = {};
-  for (const k of Object.keys(VOICE_FILES)) {
-    const o = voices && voices[k] !== undefined ? voices[k] : VOICE_FILES[k];
-    if (k === 'tick') m.tick = o ? abs(Array.isArray(o) ? o[0] : o) : '';
-    else m[k] = (Array.isArray(o) ? o : o ? [o] : []).map(abs);
+  const t = voices && voices.tick !== undefined ? voices.tick : VOICE_TICK;
+  const t0 = Array.isArray(t) ? t[0] : t;
+  m.tick = t0 ? abs(typeof t0 === 'string' ? t0 : t0.src || '') : '';
+  for (const k of Object.keys(VOICE_LINES)) {
+    const def = VOICE_LINES[k];
+    const o = voices && voices[k] !== undefined ? voices[k] : def;
+    m[k] = (Array.isArray(o) ? o : o ? [o] : []).map((e, i) => {
+      const d = def[i % def.length];
+      if (typeof e === 'string') return { url: abs(e), text: d.text, syl: d.syl };
+      const text = e.text != null ? e.text : d.text;
+      return { url: e.src ? abs(e.src) : '', text, syl: e.syl || (e.text != null ? [{ t: 0, s: text }] : d.syl) };
+    });
   }
   return m;
 }
@@ -932,6 +958,7 @@ export default function EffortGlass({
   /* ---- voice + speech bubble ---- */
   const pick = (key, len) => {
     if (len <= 1) return 0;
+    if (st.picks[key] === undefined) { st.picks[key] = 0; return 0; } // a level's first line is its signature line
     let i = Math.floor(Math.random() * len);
     if (i === st.picks[key]) i = (i + 1 + Math.floor(Math.random() * (len - 1))) % len; // never the same line twice in a row
     st.picks[key] = i;
@@ -946,13 +973,15 @@ export default function EffortGlass({
       st.preloaded = true;
       const u = st.urls;
       if (u.tick) st.voice.load(u.tick);
-      for (const k of Object.keys(u)) if (k !== 'tick') u[k].forEach((x) => st.voice.load(x));
+      for (const k of Object.keys(u)) if (k !== 'tick') u[k].forEach((x) => x.url && st.voice.load(x.url));
     }
   }
   // every user gesture on the component: marks it touched (it never talks before that) and unlocks audio
   const wake = () => { st.touched = true; ensureVoice(); };
+  const clearSyl = () => { if (st.sylT) { st.sylT.forEach(clearTimeout); st.sylT = null; } };
   const shutUp = () => {
     st.tok = (st.tok || 0) + 1;
+    clearSyl();
     if (st.sayTimer) { clearTimeout(st.sayTimer); st.sayTimer = 0; }
     if (st.voice) st.voice.stop();
   };
@@ -962,25 +991,55 @@ export default function EffortGlass({
     st.sayOn = false;
     setSay((v) => (v ? { ...v, on: false } : v));
   };
+  // the bubble types the line syllable by syllable, each at its onset in the audio (same pace when muted)
+  function reveal(n) {
+    st.sayN = Math.max(st.sayN || 0, n); // remembered, so a bubble that renders a moment later catches up
+    const el = sayRef.current;
+    if (!el || +el.dataset.k !== st.sayK) return;
+    const inn = el.firstChild;
+    if (inn && !inn.classList.contains('live')) inn.classList.add('live');
+    const sp = el.querySelectorAll('.eg-syl');
+    for (let j = 0; j < n && j < sp.length; j++) if (!sp[j].classList.contains('on')) sp[j].classList.add('on');
+  }
   function speak(key) {
     if (!st.zombie) return;
     shutUp();
-    const texts = VOICE_TEXT[key] || [''];
-    const files = (st.urls && st.urls[key]) || [];
-    const i = pick(key, files.length || texts.length);
-    let ms = key === 'eat' ? SAY_EAT_MS : SAY_MS;
-    if (st.sound && st.voice && st.voice.ready && files.length) {
-      const url = files[i % files.length];
-      const tok = st.tok, t0 = Date.now();
-      const go = () => { if (st.tok === tok && st.sound && Date.now() - t0 < 700) st.voice.play(url); };
-      const d = st.voice.dur(url);
-      if (d) { go(); if (key !== 'eat') ms = clamp(d * 1000 + 250, SAY_MS, 3200); }
-      else st.voice.load(url).then(go);
-    }
-    st.sayOn = true; st.sayW = 0; st.sayKey = key;
-    setSay((v) => ({ text: texts[i % texts.length], look: key, k: (v ? v.k : 0) + 1, on: true }));
-    if (st.hideTimer) clearTimeout(st.hideTimer);
-    st.hideTimer = setTimeout(() => { st.hideTimer = 0; hideSay(); }, ms);
+    const lines = (st.urls && st.urls[key]) || [];
+    if (!lines.length) return;
+    const i = pick(key, lines.length);
+    const line = lines[i % lines.length];
+    const syl = line.syl && line.syl.length ? line.syl : [{ t: 0, s: line.text }];
+    const lastT = syl[syl.length - 1].t * 1000;
+    const tok = st.tok;
+    let begun = false;
+    // start typing (and the bubble's life) at the moment the audio starts
+    const begin = (durMs) => {
+      if (begun || st.tok !== tok) return;
+      begun = true;
+      st.sylT = syl.map((x, j) => setTimeout(() => { if (st.tok === tok) reveal(j + 1); }, Math.max(0, x.t * 1000)));
+      let ms = key === 'eat' ? Math.max(SAY_EAT_MS, lastT + 450)
+        : durMs ? clamp(durMs + 250, Math.max(SAY_MS, lastT + 600), 3200) : Math.max(SAY_MS, lastT + 800);
+      if (st.hideTimer) clearTimeout(st.hideTimer);
+      st.hideTimer = setTimeout(() => { st.hideTimer = 0; hideSay(); }, ms);
+    };
+    st.sayOn = true; st.sayW = 0; st.sayKey = key; st.sayN = 0; st.sayK = (st.sayK || 0) + 1;
+    const sk = st.sayK;
+    setSay(() => ({ text: line.text, syl, look: key, k: sk, on: true }));
+    if (st.hideTimer) { clearTimeout(st.hideTimer); st.hideTimer = 0; }
+    if (st.sound && st.voice && st.voice.ready && line.url) {
+      const url = line.url, t0 = Date.now();
+      const go = () => {
+        if (st.tok !== tok || !st.sound || Date.now() - t0 >= 700) { begin(0); return; }
+        const played = st.voice.play(url);
+        begin(played ? st.voice.dur(url) * 1000 : 0);
+      };
+      if (st.voice.dur(url)) go();
+      else {
+        st.voice.load(url).then(go);
+        // a slow load never holds the bubble back for long: it types on its own after 700ms
+        (st.sylT = [setTimeout(() => begin(0), 700)]);
+      }
+    } else begin(0);
     kick();
   }
   // a tiny syllable per detent while dragging (pitch rises with the level)
@@ -998,10 +1057,17 @@ export default function EffortGlass({
     if (!st.sayW) st.sayW = el.offsetWidth || 0;
     const W = st.W || 360, w = st.sayW;
     const head = st.zx.x + 38;
-    const left = clamp(head - w / 2, -10, W - w + 10);
-    el.style.transform = `translate3d(${left.toFixed(1)}px,0,0)`;
+    const kx = st.knob.x, KR = 35; // knob disc + rim (Big Brain size), so the bubble never sits on the brain
+    let left = clamp(head - w / 2, -10, W - w + 10);
+    // slide right of the knob while the tail can still reach the head…
+    if (left < kx + KR + 2) left = Math.min(kx + KR + 2, head - 16, W - w + 10);
+    // …and lift over it when it still overlaps (at the right end, or when the zombie is right on it)
+    const ov = Math.min(left + w, kx + KR) - Math.max(left, kx - KR);
+    const lift = ov > 0 ? clamp(ov / 10, 0, 1) * 19 : 0;
+    el.style.transform = `translate3d(${left.toFixed(1)}px,${(-lift).toFixed(1)}px,0)`;
     el.style.setProperty('--eg-tail', clamp(head - left, 16, w - 16).toFixed(1) + 'px');
   }
+
 
   /* ---- easter egg: the zombie sneaks up at Medium / High / Extra ---- */
   const clearEggTimer = () => { if (st.eggTimer) { clearTimeout(st.eggTimer); st.eggTimer = 0; } };
@@ -1348,6 +1414,7 @@ export default function EffortGlass({
       timers.current.forEach(clearTimeout);
       if (st.sayTimer) clearTimeout(st.sayTimer);
       if (st.hideTimer) clearTimeout(st.hideTimer);
+      clearSyl();
       if (st.voice) { st.voice.close(); st.voice = null; }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1363,7 +1430,7 @@ export default function EffortGlass({
   }, [sound, zombie, st.urlKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (st.voice) st.voice.setVolume(clamp(+volume || 0, 0, 1)); }, [volume]); // eslint-disable-line react-hooks/exhaustive-deps
   // a new bubble: measure it and hang it over the zombie straight away
-  useIsoLayoutEffect(() => { st.sayW = 0; placeSay(); }, [say && say.k]); // eslint-disable-line react-hooks/exhaustive-deps
+  useIsoLayoutEffect(() => { st.sayW = 0; placeSay(); if (st.sayN) reveal(st.sayN); }, [say && say.k]); // eslint-disable-line react-hooks/exhaustive-deps
   // props that change egg eligibility
   useEffect(() => { kick(); }, [zombie, easterEggs, kick]);
 
@@ -1473,8 +1540,10 @@ export default function EffortGlass({
           </div>
           {/* the zombie's gibberish speech bubble (shown even when muted) */}
           {zombie && say && (
-            <div ref={sayRef} className={'eg-say eg-say-' + say.look + (say.on ? ' on' : '')} aria-hidden="true">
-              <span key={say.k} className="eg-say-in">{say.text}</span>
+            <div ref={sayRef} data-k={say.k} className={'eg-say eg-say-' + say.look + (say.on ? ' on' : '')} aria-hidden="true">
+              <span key={say.k} className={'eg-say-in' + (say.text.length > 22 ? ' long' : '')}>
+                {say.syl.map((x, j) => <span key={j} className={x.z ? 'eg-syl eg-syl-z' : 'eg-syl'}>{x.s}</span>)}
+              </span>
             </div>
           )}
         </div>
