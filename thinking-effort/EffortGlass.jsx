@@ -90,6 +90,7 @@ export const VOICE_LINES = {
     { src: 'eat-1.mp3', text: "mlah-hama… awhamam~", syl: [{ t: 0.17, s: "mlah-" }, { t: 0.355, s: "ha" }, { t: 0.505, s: "ma… " }, { t: 0.67, s: "a" }, { t: 0.945, s: "wha" }, { t: 1.055, s: "mam~" }] },
   ],
 };
+const VOICE_REV = '3';
 const VOICE_TICK = 'tick.mp3'; // the showcase video's glass tick + kalimba note, pitched up a little per level
 export const VOICE_TEXT = Object.fromEntries(Object.entries(VOICE_LINES).map(([k, v]) => [k, v.map((l) => l.text)]));
 const SAY_MS = 1600; // bubble life (muted); with sound it lasts as long as the line (capped)
@@ -130,8 +131,8 @@ function makeVoice() {
       const l = line; line = null;
       try {
         const t = ctx.currentTime, gp = l.g.gain;
-        gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.setTargetAtTime(0, t, 0.025);
-        l.src.stop(t + 0.15);
+        gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.linearRampToValueAtTime(0, t + 0.03);
+        l.src.stop(t + 0.035);   // a quick, click-free cut: no half syllable trails after leaving a level
       } catch (_) {}
     },
     // a full line (stops the previous one) or a short one-shot (`tick`)
@@ -158,7 +159,8 @@ function makeVoice() {
 // words and timing for that slot) or { src, text, syl } with its own.
 function voiceUrls(voices, base) {
   const b = base == null ? '' : base;
-  const abs = (u) => (/^(https?:|data:|blob:|\/)/.test(u) ? u : b + u);
+  // relative files get the voice set's revision so a browser never mixes a cached old take with new code
+  const abs = (u) => (/^(https?:|data:|blob:|\/)/.test(u) ? u : b + u + (u.includes('?') ? '' : '?v=' + VOICE_REV));
   const m = {};
   const t = voices && voices.tick !== undefined ? voices.tick : VOICE_TICK;
   const t0 = Array.isArray(t) ? t[0] : t;
