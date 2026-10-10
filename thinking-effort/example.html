@@ -10,10 +10,14 @@
 <body>
   <div class="card">
     <thinking-effort value="1"></thinking-effort>
+    <label><input type="checkbox" id="snd"> Sound (zombie gibberish)</label>
   </div>
   <pre id="log"></pre>
   <script>
     const log = (...a) => (document.getElementById('log').textContent += a.join(' ') + '\n');
+    const te = document.querySelector('thinking-effort');
+    // voice files resolve against voice-base (default "media/voice/", relative to this page)
+    document.getElementById('snd').addEventListener('change', (e) => te.toggleAttribute('sound', e.target.checked));
     document.querySelector('thinking-effort').addEventListener('change', (e) => log('effort', e.detail.level.name));
   </script>
 </body>

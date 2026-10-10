@@ -67,7 +67,7 @@ Glass needs something behind it, so put it over a gradient or an image (the demo
 <thinking-effort value="1"></thinking-effort>
 ```
 
-Attributes match the props in kebab-case (`easter-eggs`, `levels` as JSON). The `change` event carries `detail.value` (the level index) and `detail.level`, and `brainless` fires when the zombie eats the brain. `el.value` reads the current level. See `example.html`.
+Attributes match the props in kebab-case (`easter-eggs`, `levels` and `voices` as JSON, `sound`, `voice-base`, `volume`). `<thinking-effort sound>` turns the voice on. The `change` event carries `detail.value` (the level index) and `detail.level`, and `brainless` fires when the zombie eats the brain. `el.value` reads the current level. See `example.html`.
 
 ## Props
 
@@ -81,6 +81,10 @@ Attributes match the props in kebab-case (`easter-eggs`, `levels` as JSON). The 
 | `footnote` | string | `'Higher effort takes longer and uses more credits.'` | Footer text. Pass `''` to hide it. |
 | `zombie` | boolean | `true` | Turn the zombie off. Over-pull then just rubber-bands, and `←` at Low gives the knob a small bump. |
 | `easterEggs` | boolean | `true` | The zombie's sneak-up gag at Medium, High and Extra. Always off with `prefers-reduced-motion`. (The Low nap, bubble and pop are part of the Low look, not an easter egg.) |
+| `sound` | boolean | `false` | The zombie's voice: Crazy-Dave-style gibberish (see [Voice](#voice)). Off by default. Nothing is created or downloaded until it is on, and nothing plays before the user touches the slider. |
+| `voices` | `{ [look]: string[], eat?: string[], tick?: string }` | built-in set | Replace any of the lines. Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` the short drag syllable. Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
+| `voiceBase` | string | `'media/voice/'` | Where the built-in files live, relative to the page. With a bundler, copy `media/voice/` into your public folder and point this at it (e.g. `'/effort-voice/'`). |
+| `volume` | number | `0.8` | Voice volume, 0–1. |
 | `onChange` | `(index, level) => void` | – | Fired when a new level is committed: on release, a tap, a key press, a label click, or Reset. |
 | `onBrainless` | `() => void` | – | Fired when the zombie bites the brain. |
 | `className` | string | `''` | Extra class names on the root. |
@@ -111,6 +115,28 @@ Every character value is a smooth function of the knob's *live* position (in lev
 | Snot bubble | Its size is `bubbleSize(gap)`: 0.45 far away → 1.45 nose to nose, where `gap` is the zombie's *live spring* position minus the knob centre, minus up to 40 px of over-pull lean-in. So the closer the zombie gets, including while it leans in as you over-pull, the bigger the bubble. On top of that it inflates and deflates on the same 4.6 s loop as the slow Low breath. Hidden while brainless; it blows up again the next time the brain dozes off at Low. |
 | Bite | Over-pull past about 0.36 of a level (or `←` at Low) starts the sequence: the **bubble pops** (burst ring, spikes, flying droplets), ~70 ms later the **brain startles awake** (eyes snap open, the knob jolts, a "!" flashes, the cap is knocked askew), and ~150 ms after that the **zombie lunges** above the knob and takes **one big chomp out of the right half** (the side facing it) of the disc and the brain together: a clean edge of four big tooth scallops running top to bottom. The brain's dark outline (with a pink flesh edge just inside) and the disc's rim are redrawn along the cut, so the bite looks drawn rather than masked, and the track shows through it. The nightcap is knocked clean off: it flies up and away, spinning, and fades. Crumbs (brain bits and porcelain chips) fly from the cut edge toward the zombie. The half brain that is left stares with dazed spiral eyes while dizzy stars circle it. The zombie then **chews twice** (jaw + head bob), lets out a small **"burp"** puff, and goes back to idling (root `data-munch="chew" | "burp"`). The bite shrinks continuously as you slide right and is fully regrown by about 0.9. The root carries `data-nap="pop" | "startle" | "bite"` during the sequence. |
 
+### Voice
+
+With `sound` on, the zombie talks in Crazy-Dave-style gibberish, one short line per level, recorded by [@nextoneforeal](https://x.com/nextoneforeal):
+
+| Look | Line | Bubble |
+|---|---|---|
+| Low | sleepy mumble | *brainz… wabba… zzz* |
+| Medium | curious, rising | *wabibabo?* |
+| High | steady muttering | *bababoyi!* |
+| Extra | shout | *waba-BOOYI!!* |
+| Max | fast chatter | *wabawabawaba-bibo!* |
+| Big Brain | a scream that falls and fades as he runs off | *BABOOOOO~* |
+| Bite (over-pull) | *nom nom* | *nom nom… wabibabo~* |
+
+- While you drag, each detent plays only a tiny syllable whose pitch rises with the level. When the knob **settles** on a level (after ~140 ms of rest) the zombie says one full line. A new line always cuts off the previous one, and leaving a level cuts its line short.
+- The Big Brain scream starts the moment the zombie bolts, so it stays in sync with the run-away, and it doesn't repeat when the knob lands. The bite line plays on the crunch, and there is no Low line while the brain is gone.
+- Each look has 2–3 takes, picked at random but never the same take twice in a row.
+- Audio is Web Audio, created lazily: the context is unlocked on the first pointer or key press on the slider (autoplay rules), and the ~200 KB of mono MP3s are fetched only once `sound` is on.
+- A speech bubble shows the line above the zombie's head **even when muted**, for about 1.6 s (or as long as the line). It stays inside the card and never covers the knob. With `prefers-reduced-motion` it only fades.
+
+The files in `media/voice/` are the creator's own recordings, pitched up about 4 semitones with formants kept, sped up a little, with a nasal EQ and a light vibrato, loudness-normalised to about −16 LUFS.
+
 ### Easter egg
 
 At Medium, High and Extra, while the slider is idle, a randomized timer fires every 4–8 s (×1.35 at High, ×1.8 at Extra). The zombie tiptoes in with sly half-closed eyes (a slow spring), the brain flashes and pops a "!", then the zombie jumps, gets a "!" of its own, scoots back past its spot and settles. Boldness drops with level: it covers 55% of the gap at Medium, 42% at High and 30% at Extra.
@@ -134,10 +160,12 @@ It never fights the spring engine. The gag is only an **offset added to the zomb
 - `effort-glass.css`: styles
 - `thinking-effort.js`: the same component as a plain-HTML Web Component (`<thinking-effort>`), no React needed
 - `example.html`: the Web Component on a plain page
-- `demo.html`: fully self-contained preview (React bundled inline, CSS inline). It opens offline, including in phone file previews.
+- `media/voice/`: the zombie's voice lines (`l0-*.mp3` … `l5-*.mp3`, `eat-*.mp3`, `tick.mp3`)
+- `demo.html`: fully self-contained preview (React, CSS and the voice lines inline). It opens offline, including in phone file previews. Use the speaker button under the component to turn the sound on.
 
 ## Credits
 
+- Zombie voice: recorded by [@nextoneforeal](https://x.com/nextoneforeal)
 - Zombie: redrawn after "Plants Vs Zombies" line art by SVG Repo, CC0 (https://www.svgrepo.com/svg/518723/plants-vs-zombies)
 - Brain line art: "Brain Illustration 1" by SVG Repo, CC0 (https://www.svgrepo.com/svg/482775/brain-illustration-1)
 

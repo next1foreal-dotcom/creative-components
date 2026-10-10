@@ -1,10 +1,10 @@
 # Nosy Password
 
-A password field with a nosy little animal peeking over the top edge. Pick `animal="teddy"` (a toy poodle with a pink bow) or `animal="corgi"`.
+A password field with a nosy little animal peeking over the top edge. Pick `animal="teddy"` (a toy poodle with a pink bow), `animal="corgi"`, or `animal="bear"` (a big-headed college-mascot bear with pop-art rainbow eyes).
 
 - **Asleep** until you tap the field, then startles awake.
 - **Eyes follow your typing**, and leans in closer the faster you type.
-- **Reveal the password** and it gasps and hides its eyes in its own way: the teddy flips its big curly ears over them, the corgi spins round and shows you its butt. A second later it sneaks a peek and gets caught.
+- **Reveal the password** and it gasps and hides its eyes in its own way: the teddy flips its big curly ears over them, the corgi spins round and shows you its butt, the bear slaps both paws over its eyes and peeks through. A second later it sneaks a peek and gets caught.
 - **Hide it again** and it whistles like nothing happened.
 - **Clear the field** and it sinks back, disappointed.
 
@@ -22,7 +22,7 @@ import './nosy-password.css';
 <NosyPassword animal="corgi" size="lg" />
 ```
 
-Props: `animal` (`"teddy"` or `"corgi"`), `value` / `defaultValue` / `onChange(value, event)`, `revealed` / `defaultRevealed` / `onRevealChange(bool)`, `label`, `placeholder`, `name`, `id`, `autoComplete`, `disabled`, `size` (`"md"` or `"lg"`), `inputProps`. Ref: `focus()`, `blur()`, `reveal(bool)`, `input`.
+Props: `animal` (`"teddy"`, `"corgi"` or `"bear"`), `value` / `defaultValue` / `onChange(value, event)`, `revealed` / `defaultRevealed` / `onRevealChange(bool)`, `label`, `placeholder`, `name`, `id`, `autoComplete`, `disabled`, `size` (`"md"` or `"lg"`), `inputProps`. Ref: `focus()`, `blur()`, `reveal(bool)`, `input`.
 
 ## Plain HTML
 

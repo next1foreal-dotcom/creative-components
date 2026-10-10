@@ -1,4 +1,4 @@
-// NosyPassword — a password field with a nosy little animal peeking over its top edge (animal="teddy" | "corgi").
+// NosyPassword — a password field with a nosy little animal peeking over its top edge (animal="teddy" | "corgi" | "bear").
 // Its eyes follow your caret as you type. Reveal the password and it gasps and hides its eyes in its own way
 // (the teddy flips its ears over them, the corgi turns round and shows you its butt), then sneaks a peek and gets caught. Hide it again and it whistles
 // like nothing happened. Clear the field and it sinks back, disappointed.
@@ -71,13 +71,14 @@ const Fx = () => (
     <g className="np-z" fill="#8a93a3"><text x="106" y="40" className="z1">z</text><text x="114" y="30" className="z2">z</text></g>
   </>
 );
-function Paws({ fill = '#fff', front, xs = [48, 92] }) {
+function Paws({ fill = '#fff', front, xs = [48, 92], pad }) {
   return (
     <g className="np-turn">
       {front}
       {[['l', xs[0]], ['r', xs[1]]].map(([s, x]) => (
         <g key={s} className={'np-paw ' + s}>
           <ellipse cx={x} cy="88" rx="9.6" ry="7" fill={fill} {...line} />
+          {pad && <ellipse cx={x} cy="89.4" rx="4.6" ry="3" fill={pad} />}
           <path d={`M${x - 3} 91 v-3.4 M${x + 3} 91 v-3.4`} {...line} strokeWidth="1.7" fill="none" />
         </g>
       ))}
@@ -178,7 +179,63 @@ function Corgi({ tick, fid }) {
   );
 }
 
-const ANIMALS = { teddy: Teddy, corgi: Corgi };
+// ---- Bear (original): big-headed plush college-mascot bear, pop-art rainbow eyes, varsity jacket. Covers its eyes with its paws. ----
+function PopEye({ x, y }) {
+  return (
+    <g className="np-eye">
+      <g className="np-eyeopen">
+        <ellipse cx={x} cy={y} rx="10.6" ry="11.4" fill="#fff" {...line} />
+        <g className="np-iris">
+          <circle cx={x} cy={y + 0.6} r="7.6" fill="#23b5d3" stroke={INK} strokeWidth="1.4" />
+          <circle cx={x} cy={y + 0.6} r="5.4" fill="#ff5fa2" />
+          <circle cx={x} cy={y + 0.6} r="3.6" fill="#ffd23f" />
+          <circle cx={x} cy={y + 0.6} r="2.2" fill={INK} />
+          <ellipse cx={x + 2.6} cy={y - 3} rx="2.4" ry="2.8" fill="#fff" />
+          <circle cx={x - 2.8} cy={y + 3.6} r="1.1" fill="#fff" />
+        </g>
+      </g>
+      <path className="np-eyesleep" d={`M${x - 7} ${y} Q${x} ${y + 5} ${x + 7} ${y}`} />
+      <path className="np-eyehappy" d={`M${x - 7} ${y + 2.4} Q${x} ${y - 5} ${x + 7} ${y + 2.4}`} />
+    </g>
+  );
+}
+function Bear({ tick, fid }) {
+  const FUR = '#9a7150', EARIN = '#d9b48f', MUZ = '#e9d6bb';
+  const ear = (s, x, ox) => (
+    <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
+      <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
+        <circle cx={x} cy="32" r="11" fill={FUR} {...line} />
+        <circle cx={x} cy="32.6" r="6" fill={EARIN} />
+      </g>
+    </g>
+  );
+  return (
+    <>
+      <g clipPath={`url(#${fid})`}>
+        <g className="np-turn"><g className="np-head">
+          {ear('l', 41, 41)}{ear('r', 99, 99)}
+          <Blob fill={FUR} shapes={[['e', 70, 59, 36, 30]]} />
+          <path d="M60 33 q4 -2.4 8 -.6 M72 32.4 q4 -1.8 8 .6" fill="none" stroke="#7d5a3e" strokeWidth="1.5" strokeLinecap="round" />
+          <ellipse cx="70" cy="76" rx="19.5" ry="13.5" fill={MUZ} {...line} />
+          <Blush y={72} xs={[42, 98]} />
+          <PopEye x={53} y={55} /><PopEye x={87} y={55} />
+          <path d="M65 67.4 Q70 64.6 75 67.4 Q75 71 70 72 Q65 71 65 67.4Z" fill={INK} />
+          <ellipse cx="68.4" cy="67" rx="1.5" ry=".8" fill="#fff" opacity=".8" />
+          <Mouth y={75.6} />
+        </g></g>
+      </g>
+      <Fx />
+      <Paws fill={FUR} pad="#d9b48f" xs={[47, 93]} front={
+        <g>
+          <path d="M44 86.5 Q70 93 96 86.5 L97 93 Q70 100 43 93Z" fill="#2f4f9d" {...line} strokeWidth="2" />
+          <path d="M44.4 89.6 Q70 96 96.4 89.6" fill="none" stroke="#fff" strokeWidth="1.6" />
+          <g fill="#ffd23f" stroke={INK} strokeWidth=".8">{[54, 60, 66, 72, 78, 84].map((x, i) => <circle key={x} cx={x} cy={i < 3 ? 91.6 - i * 0.6 : 90.4 + (i - 3) * 0.6} r="1.3" />)}</g>
+        </g>} />
+    </>
+  );
+}
+
+const ANIMALS = { teddy: Teddy, corgi: Corgi, bear: Bear };
 function Art({ animal, uid, px, py, tick }) {
   const A = ANIMALS[animal] || Teddy;
   const fid = `${uid}-field`;
