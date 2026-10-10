@@ -180,46 +180,55 @@ function Corgi({ tick, fid }) {
 }
 
 // ---- Bear (original): big-headed plush college-mascot bear, pop-art rainbow eyes, varsity jacket. Covers its eyes with its paws. ----
-const BINK = '#2a1e18';
-const bl = { stroke: BINK, strokeWidth: 1.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
-function PopEye({ x, y }) {
+// Style follows the user's own drawing (Oct 10 2026): bell-shaped head, thick black outline, flat fills, oval pop eyes, peach muzzle, no mouth.
+const BINK = '#141010';
+const bl = { stroke: BINK, strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' };
+function PopEye({ x, y, kind }) {
   return (
     <g className="np-eye">
       <g className="np-eyeopen">
-        <ellipse cx={x} cy={y} rx="12.4" ry="13.2" fill="#fff" {...bl} />
+        <ellipse cx={x} cy={y} rx="9.6" ry="12" fill="#fff" {...bl} />
         <g className="np-iris">
-          <circle cx={x} cy={y + 0.8} r="9.8" fill="#1b1b22" />
-          <circle cx={x} cy={y + 0.8} r="8.6" fill="#2fc0e6" />
-          <circle cx={x} cy={y + 0.8} r="6.4" fill="#ff4fa3" />
-          <circle cx={x} cy={y + 0.8} r="4.8" fill="#1b1b22" />
-          <path d={`M${x - 3} ${y + 3.6} a3.4 3.4 0 0 0 4.6 .8`} fill="none" stroke="#ffe14d" strokeWidth="1.3" strokeLinecap="round" />
-          <circle cx={x + 2.9} cy={y - 2.6} r="2.6" fill="#fff" />
-          <circle cx={x - 3.1} cy={y + 3.9} r="1.2" fill="#fff" />
-          <circle cx={x - 4.2} cy={y - 3.2} r=".9" fill="#fff" />
+          {kind === 'a' ? (
+            <>
+              <ellipse cx={x} cy={y + 0.6} rx="6" ry="8.6" fill="#d6338a" stroke={BINK} strokeWidth="1" />
+              <circle cx={x - 0.6} cy={y - 4.8} r="2.4" fill="#f4d531" />
+              <circle cx={x + 0.6} cy={y + 1} r="3.3" fill="#2fa8e0" />
+              <circle cx={x + 2} cy={y + 5.6} r="1.4" fill="#fff" />
+            </>
+          ) : (
+            <>
+              <ellipse cx={x} cy={y + 0.6} rx="6" ry="8.6" fill="#111" />
+              <path d={`M${x - 5.6} ${y - 1} C${x - 5.4} ${y - 6.6} ${x - 1} ${y - 8.4} ${x + 3.4} ${y - 6.8} C${x - 1} ${y - 5.6} ${x - 3.8} ${y - 3.4} ${x - 5.6} ${y - 1}Z`} fill="#2fa8e0" />
+              <circle cx={x - 1.4} cy={y - 3.6} r="2.2" fill="#d6338a" />
+              <circle cx={x + 0.6} cy={y + 1} r="3.1" fill="#d6338a" />
+              <circle cx={x + 1.6} cy={y + 5.8} r="1.3" fill="#f4d531" />
+            </>
+          )}
         </g>
       </g>
-      <path className="np-eyesleep" d={`M${x - 8} ${y + 1} Q${x} ${y + 6} ${x + 8} ${y + 1}`} />
-      <path className="np-eyehappy" d={`M${x - 8} ${y + 3} Q${x} ${y - 5} ${x + 8} ${y + 3}`} />
+      <path className="np-eyesleep" d={`M${x - 7} ${y + 1} Q${x} ${y + 6} ${x + 7} ${y + 1}`} />
+      <path className="np-eyehappy" d={`M${x - 7} ${y + 3} Q${x} ${y - 5} ${x + 7} ${y + 3}`} />
     </g>
   );
 }
 function BearMouth({ y }) {
   return (
-    <g className="np-mouths" {...bl} strokeWidth="1.6" fill="none">
-      <path className="np-mouth smile" d={`M66 ${y} Q70 ${y + 3} 74 ${y}`} />
-      <path className="np-mouth flat" d={`M66.5 ${y + 1} H73.5`} />
-      <ellipse className="np-mouth oo" cx="71" cy={y + 1} rx="1.8" ry="2.1" fill={BINK} />
-      <ellipse className="np-mouth gasp" cx="70" cy={y + 1.6} rx="3" ry="3.6" fill="#5a2630" />
+    <g className="np-mouths" fill="none">
+      <path className="np-mouth smile" d="" />
+      <path className="np-mouth flat" d="" />
+      <ellipse className="np-mouth oo" cx="71" cy={y} rx="1.7" ry="2" fill={BINK} />
+      <ellipse className="np-mouth gasp" cx="70" cy={y + 0.6} rx="2.8" ry="3.4" fill="#4a1c24" stroke={BINK} strokeWidth="1.4" />
     </g>
   );
 }
 function Bear({ tick, fid }) {
-  const FUR = '#8e6a4b', EARIN = '#c8a27e', MUZ = '#cdb79e';
-  const ear = (s, x, ox) => (
+  const FUR = '#7e4a2c', PEACH = '#f5d0ad';
+  const ear = (s, x, ix, ox) => (
     <g className={'np-tick ' + s} key={s + tick} style={{ transformOrigin: `${ox}px 44px` }}>
       <g className={'np-ear ' + s} style={{ transformOrigin: `${ox}px 44px` }}>
-        <circle cx={x} cy="29" r="9" fill={FUR} {...bl} />
-        <circle cx={x} cy="29.6" r="5" fill={EARIN} />
+        <circle cx={x} cy="32" r="9.4" fill={FUR} {...bl} />
+        <ellipse cx={ix} cy="31" rx="5.2" ry="5.6" fill={PEACH} stroke={BINK} strokeWidth="1.2" />
       </g>
     </g>
   );
@@ -227,23 +236,19 @@ function Bear({ tick, fid }) {
     <>
       <g clipPath={`url(#${fid})`}>
         <g className="np-turn"><g className="np-head">
-          {ear('l', 43, 43)}{ear('r', 97, 97)}
-          <ellipse cx="70" cy="57" rx="35" ry="32" fill={FUR} {...bl} />
-          <path d="M41 50 q-1.6 6 0 11 M99 50 q1.6 6 0 11" fill="none" stroke="#6f4f36" strokeWidth="1.1" strokeLinecap="round" opacity=".7" />
-          <ellipse cx="70" cy="74.5" rx="23.5" ry="17" fill={MUZ} {...bl} />
-          <ellipse cx="63" cy="68" rx="9" ry="4" fill="#fff" opacity=".18" />
-          <PopEye x={54.5} y={47} /><PopEye x={85.5} y={47} />
-          <ellipse cx="70" cy="66.6" rx="4.4" ry="3" fill={BINK} />
-          <ellipse cx="68.8" cy="65.8" rx="1.5" ry=".8" fill="#fff" opacity=".7" />
-          <path d="M70 69.6 V75" {...bl} strokeWidth="1.3" />
-          <BearMouth y={76} />
+          {ear('l', 43, 42, 43)}{ear('r', 97, 98, 97)}
+          <path transform="translate(70 0) scale(1.12 1) translate(-70 0)" d="M70 25 C87 25 97 34 100.5 50 C103.5 64 106 76 104 84 C100.5 90 87 92 70 92 C53 92 39.5 90 36 84 C34 76 36.5 64 39.5 50 C43 34 53 25 70 25Z" fill={FUR} {...bl} />
+          <path transform="translate(70 0) scale(1.1 1) translate(-70 0)" d="M57.5 72 C62 68.4 78 68.4 82.5 72 C87.5 77 90 84 89 91 L51 91 C50 84 52.5 77 57.5 72Z" fill={PEACH} {...bl} />
+          <PopEye x={54.5} y={54} kind="a" /><PopEye x={85.5} y={54} kind="b" />
+          <path d="M66.2 65.2 Q70 63.4 73.8 65.2 Q71.4 70 70 70 Q68.6 70 66.2 65.2Z" fill={BINK} stroke={BINK} strokeWidth="1" strokeLinejoin="round" />
+          <BearMouth y={78} />
         </g></g>
       </g>
       <Fx />
-      <Paws fill={FUR} pad="#c8a27e" xs={[46, 94]} big front={
+      <Paws fill={FUR} pad={PEACH} xs={[46, 94]} big front={
         <g>
-          <path d="M40 85.5 Q70 92 100 85.5 L101 94 Q70 101 39 94Z" fill="#2c4a96" {...bl} />
-          <path d="M39.6 88.6 Q70 95 100.4 88.6 M39.4 91.4 Q70 97.8 100.6 91.4" fill="none" stroke="#fff" strokeWidth="1.4" />
+          <path d="M40 87 Q70 93 100 87 L101 95 Q70 101.5 39 95Z" fill="#2c4a96" {...bl} />
+          <path d="M39.6 90 Q70 96 100.4 90 M39.4 92.6 Q70 98.6 100.6 92.6" fill="none" stroke="#fff" strokeWidth="1.3" />
         </g>} />
     </>
   );
