@@ -1499,9 +1499,12 @@ export default function EffortGlass({
   };
 
   /* ---- pointer ---- */
+  // pointer x in the track's own layout px: a CSS `zoom` or scale on an ancestor (e.g. a page that shrinks
+  // the component to fit a card) makes client px differ from layout px, so map through the rendered width
   const localX = (e) => {
-    const r = trackRef.current.getBoundingClientRect();
-    return e.clientX - r.left;
+    const el = trackRef.current, r = el.getBoundingClientRect();
+    const k = r.width > 0 && el.clientWidth > 0 ? el.clientWidth / r.width : 1;
+    return (e.clientX - r.left) * k;
   };
   const onPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return;
