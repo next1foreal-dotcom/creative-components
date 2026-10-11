@@ -17,12 +17,17 @@
   one line when the knob settles on a level, a tiny syllable per detent while
   dragging, a scream as it flees Big Brain and "nom nom" on the bite. Voice
   recorded by @nextoneforeal. A speech bubble shows the line even when muted.
+  Sound effects (same `sound` switch): the showcase video's synthesized SFX
+  at the matching moments (pop, startle, chomp, chew, burp, regrow boing,
+  the easter egg's sting and scoot, Extra's zap + hum, Max's sizzle, Big
+  Brain's bell + choir, the zombie's footsteps as it flees). No music.
 
   Art: zombie redrawn after "Plants Vs Zombies" by SVG Repo (CC0,
   svgrepo.com/svg/518723); brain line art "Brain Illustration 1" by SVG Repo
   (CC0, svgrepo.com/svg/482775).
 */
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import SFX_DATA from './thinking-effort-sfx.js';
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -104,6 +109,8 @@ function makeVoice() {
   const v = {
     vol: 0.8,
     get ready() { return !!ctx; },
+    get ctx() { return ctx; },
+    get out() { return out; },
     unlock() {
       if (typeof window === 'undefined') return;
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -154,6 +161,103 @@ function makeVoice() {
     close() { v.stop(); if (ctx && ctx.close) ctx.close().catch(() => {}); ctx = null; bufs.clear(); loading.clear(); },
   };
   return v;
+}
+/* the showcase video's SFX (opt-in `sound`): small embedded samples rendered from the video's synth
+   (sfxport/te_gen.py), played through the voice player's context and volume. Every one-shot fades in
+   and out (no clicks); loops (Extra hum, Max sizzle) follow a level and fade away when it hits 0. */
+function makeSfx(voice) {
+  const GAIN = SFX_DATA._gain || 1, LOOPS = SFX_DATA._loops || {};
+  const bufs = {}, loops = {}, want = {}, live = new Set();
+  let decoding = false;
+  const decode = () => {
+    const c = voice.ctx;
+    if (!c || decoding) return;
+    decoding = true;
+    for (const [k, url] of Object.entries(SFX_DATA)) {
+      if (k[0] === '_') continue;
+      fetch(url).then((r) => r.arrayBuffer()).then((ab) => new Promise((res, rej) => c.decodeAudioData(ab, res, rej)))
+        .then((b) => { if (voice.ctx !== c) return; bufs[k] = b; if (LOOPS[k] && want[k] > 0.001) fx.loop(k, want[k]); })
+        .catch(() => {});
+    }
+  };
+  // oscillator stand-ins while the samples decode (or where decoding fails): [freq, dur, type, gain, at, freqEnd]
+  const tone = (f, d, type, gn, at = 0, f2) => {
+    const c = voice.ctx;
+    if (!c) return;
+    try {
+      const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gn, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(voice.out); o.start(t); o.stop(t + d + 0.02);
+    } catch (_) {}
+  };
+  const BLIP = {
+    pop: [[380, 0.12, 'sine', 0.2, 0, 1500]], startle: [[1175, 0.12, 'triangle', 0.1], [1568, 0.14, 'triangle', 0.1, 0.06]],
+    lunge: [[300, 0.2, 'sawtooth', 0.03, 0, 1600]], chomp: [[150, 0.18, 'square', 0.12, 0, 45]], chew: [[140, 0.1, 'triangle', 0.08, 0, 70]],
+    burp: [[118, 0.4, 'sawtooth', 0.08, 0, 88]], regrow: [[240, 0.4, 'sine', 0.14, 0, 480]], slide: [[500, 0.45, 'sine', 0.05, 0, 1450]],
+    alert: [[2093, 0.3, 'sine', 0.08], [2637, 0.3, 'sine', 0.08, 0.07]], scoot: [[1500, 0.35, 'sine', 0.06, 0, 420]],
+    zap: [[120, 0.3, 'square', 0.05, 0, 90]], bigbrain: [[587, 1.2, 'sine', 0.1], [1175, 0.9, 'sine', 0.05, 0.004]],
+  };
+  const fx = {
+    decode,
+    play(k, { gain = 1, rate = 1 } = {}) {
+      const c = voice.ctx, b = bufs[k];
+      if (!c) return false;
+      if (!b) { decode(); (BLIP[k] || []).forEach((x) => tone(...x)); return false; }
+      if (c.state === 'suspended' && c.resume) c.resume().catch(() => {});
+      try {
+        const src = c.createBufferSource(), g = c.createGain();
+        src.buffer = b; src.playbackRate.value = rate;
+        const t = c.currentTime, v = gain * GAIN, end = t + b.duration / rate;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.003);
+        g.gain.setValueAtTime(v, Math.max(t + 0.004, end - 0.01)); g.gain.linearRampToValueAtTime(0, end);
+        src.connect(g); g.connect(voice.out);
+        const h = { src, g };
+        live.add(h); src.onended = () => live.delete(h);
+        src.start(t);
+        return true;
+      } catch (_) { return false; }
+    },
+    // a looping bed at `level` (0..1); 0 fades it out over ~120 ms and stops it
+    loop(k, level) {
+      want[k] = level;
+      const c = voice.ctx, L = loops[k];
+      if (!c) return;
+      if (level > 0.001) {
+        const b = bufs[k];
+        if (!b) { decode(); return; }
+        if (c.state === 'suspended' && c.resume) c.resume().catch(() => {});
+        let l = L;
+        if (!l) {
+          try {
+            const src = c.createBufferSource(), g = c.createGain(), [a, e] = LOOPS[k] || [0, b.duration];
+            src.buffer = b; src.loop = true; src.loopStart = a; src.loopEnd = e;
+            g.gain.setValueAtTime(0, c.currentTime);
+            src.connect(g); g.connect(voice.out); src.start(c.currentTime, a);
+            l = loops[k] = { src, g };
+          } catch (_) { return; }
+        }
+        l.g.gain.setTargetAtTime(level * GAIN, c.currentTime, 0.06);
+      } else if (L) {
+        loops[k] = null;
+        try {
+          const t = c.currentTime, gp = L.g.gain;
+          gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.linearRampToValueAtTime(0, t + 0.12);
+          L.src.stop(t + 0.14);
+        } catch (_) {}
+      }
+    },
+    looping: (k) => !!loops[k],
+    stopAll() {
+      for (const k of Object.keys(loops)) fx.loop(k, 0);
+      const c = voice.ctx;
+      for (const h of live) {
+        try { const t = c.currentTime, gp = h.g.gain; gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.linearRampToValueAtTime(0, t + 0.03); h.src.stop(t + 0.035); } catch (_) {}
+      }
+      live.clear();
+    },
+  };
+  return fx;
 }
 // → { tick: url, 0: [{ url, text, syl }], … }. A custom entry may be a url (it keeps the default line's
 // words and timing for that slot) or { src, text, syl } with its own.
@@ -902,12 +1006,13 @@ export default function EffortGlass({
       vars: {}, zombie, eggs: easterEggs, n,
       egg: null, eggTimer: 0, sneak: 0, scare: 0, eggAttr: '', armedAttr: '',
       // voice
-      voice: null, sound: false, urls: null, said: -1, sayTimer: 0, hideTimer: 0, fled: false, lastTick: 0, picks: {}, sayW: 0, sayKey: -1, touched: false,
+      voice: null, sound: false, sfx: false, fx: null, fxLv: {}, crkT: 0, groaned: false, steps: 0, slid: false, lastBell: 0, urls: null, said: -1, sayTimer: 0, hideTimer: 0, fled: false, lastTick: 0, picks: {}, sayW: 0, sayKey: -1, touched: false,
     };
   }
   const st = S.current;
   st.zombie = zombie; st.n = n; st.eggs = easterEggs;
   st.sound = !!sound && !!zombie; // the voice is the zombie's
+  st.sfx = !!sound; // the sound effects follow `sound` alone
   st.vol = volume;
   {
     const key = JSON.stringify([voices || null, voiceBase]);
@@ -975,11 +1080,12 @@ export default function EffortGlass({
     return i;
   };
   function ensureVoice() {
-    if (!st.sound) return;
+    if (!st.sound && !st.sfx) return;
     if (!st.voice) st.voice = makeVoice();
     st.voice.setVolume(clamp(+st.vol || 0, 0, 1));
     st.voice.unlock();
-    if (st.voice.ready && !st.preloaded) {
+    if (st.sfx && st.voice.ready) { if (!st.fx) st.fx = makeSfx(st.voice); st.fx.decode(); }
+    if (st.sound && st.voice.ready && !st.preloaded) {
       st.preloaded = true;
       const u = st.urls;
       if (u.tick) st.voice.load(u.tick);
@@ -1060,6 +1166,34 @@ export default function EffortGlass({
     st.lastTick = now;
     st.voice.play(st.urls.tick, { gain: 0.42, rate: 0.86 + look * 0.07, tick: true });
   }
+  // a video SFX: only with `sound` on, and never before the first gesture on the component
+  const fx = (k, o) => { if (st.sfx && st.touched && st.fx) st.fx.play(k, o); };
+  // loops follow a 0..1 level (hum: Extra → Max, sizzle: Max); only re-scheduled when the level moves
+  const fxLoop = (k, lv) => {
+    if (!st.fx) return;
+    if (!st.sfx || !st.touched) lv = 0;
+    const was = st.fxLv[k] || 0;
+    if (Math.abs(lv - was) < 0.03 && (lv > 0.001) === (was > 0.001) && (lv <= 0.001 || st.fx.looping(k))) return;
+    st.fxLv[k] = lv;
+    st.fx.loop(k, lv);
+  };
+  // Extra/Max: stray zap crackles over the hum, every 0.28–0.55 s while it lasts
+  const crackle = () => {
+    if (st.crkT) return;
+    const go = () => {
+      const lv = st.fxLv.hum || 0;
+      if (lv < 0.5 || !st.sfx) { st.crkT = 0; return; }
+      fx('crk' + Math.floor(Math.random() * 3), { gain: (st.fxLv.sizzle || 0) > 0.5 ? 0.7 : 1, rate: 0.94 + Math.random() * 0.12 });
+      st.crkT = setTimeout(go, 280 + Math.random() * 270);
+    };
+    st.crkT = setTimeout(go, 550);
+  };
+  const hushFx = () => {
+    if (st.crkT) { clearTimeout(st.crkT); st.crkT = 0; }
+    st.fxLv = {};
+    if (st.fx) st.fx.stopAll();
+  };
+
   // the bubble hangs over the zombie's head, kept inside the card; its tail points at the head
   function placeSay() {
     const el = sayRef.current;
@@ -1118,6 +1252,9 @@ export default function EffortGlass({
     // detents / label
     const near = clamp(Math.round(s), 0, last);
     if (near !== st.live) {
+      const was = design(st.live), now = design(near);
+      if (now === 3 && was < 3) fx('zap');
+      if (now === 5 && was < 5 && Date.now() - st.lastBell > 1200) { st.lastBell = Date.now(); fx('bigbrain'); }
       st.live = near;
       setLive(near);
       if (st.mode === 'drag' || st.mode === 'chase') {
@@ -1129,16 +1266,29 @@ export default function EffortGlass({
       st.said = -1;
     }
 
+    // over-pull: the zombie groans and shuffles closer before it bites
+    if (st.mode === 'drag' && st.zombie && !st.brainless && !st.eating && s < 0) {
+      const lean = -s / EAT_AT;
+      if (lean > 0.12 && !st.groaned) { st.groaned = true; fx('groan'); }
+      if (st.steps < 3 && lean > 0.25 * (st.steps + 1)) { fx('step' + st.steps); st.steps++; }
+    } else if (s > 0.05) { st.groaned = false; st.steps = 0; }
     // eat on over-pull
     if (st.mode === 'drag' && st.zombie && !st.brainless && !st.eating && s < -EAT_AT) eat();
+    // bitten and dragged back right: slide whistle up towards the regrow
+    if (st.brainless && !st.eating && !st.slid && st.mode === 'drag' && s > 0.2) { st.slid = true; fx('slide'); }
     // regrow
     if (st.brainless && !st.eating && s > 0.9) {
       st.brainless = false; setBrainless(false); st.sc.v += 3;
+      fx('regrow');
       if (st.munch) setMunch('');
     }
 
     // looks + character drives (all continuous in u)
     const L = looks(u);
+    // Extra/Max beds: hum while the brain is electric (Extra → Max), sizzle + steam while it runs hot (Max)
+    fxLoop('hum', st.brainless ? 0 : L.zap);
+    fxLoop('sizzle', st.brainless ? 0 : L.hot);
+    if ((st.fxLv.hum || 0) >= 0.5) crackle();
     const nerv = smooth(0.7, 2.2, u) * (1 - smooth(4.05, 4.45, u));
     const scream = smooth(4.05, 4.45, u); // starts as soon as the knob leaves Max, while the zombie is still on screen
 
@@ -1152,7 +1302,7 @@ export default function EffortGlass({
 
     // voice: Big Brain scream as the zombie bolts; otherwise one line once the knob settles on a level
     if (st.touched && st.zombie) {
-      if (scream > 0.5 && !st.fled && !st.brainless && !st.eating) { st.fled = true; speak(5); }
+      if (scream > 0.5 && !st.fled && !st.brainless && !st.eating) { st.fled = true; speak(5); fx('flee'); }
       else if (scream < 0.2) st.fled = false;
       if (st.mode === 'idle' && !st.brainless && !st.eating && st.said !== st.target && Math.abs(k.x - xOf(st.target)) < 1.5) {
         st.said = st.target;
@@ -1176,6 +1326,11 @@ export default function EffortGlass({
       const e = st.t - E.t0;
       const gap = Math.max(0, base - (k.x + PAD + 2));
       const dist = gap * (E.dk === 1 ? 0.55 : E.dk === 2 ? 0.42 : 0.3);
+      // sound: four tiptoes on the sneak, the "!" sting + zombie flinch, the scoot back
+      E.sn = E.sn || 0;
+      if (E.sn < 4 && e >= 0.13 + 0.29 * E.sn && e < 1.4) { fx('tip' + E.sn); E.sn++; }
+      if (e >= 1.4 && !E.al) { E.al = 1; E.sn = 4; fx('alert'); }
+      if (e >= 1.8 && !E.sc) { E.sc = 1; fx('scoot'); }
       if (e < 1.4) { off = -dist; eggResp = 1.15; sneakT = 1; eggRot = -7; setAttr('egg', 'sneak'); }
       else if (e < 1.8) { off = -dist; eggResp = 1.15; scareT = 1; eggRot = 4; setAttr('egg', 'alert'); }
       else if (e < 2.6) { off = 16; eggResp = 0.22; scareT = 1; eggRot = 9; zyt = e < 2.02 ? -10 : 0; setAttr('egg', 'scoot'); }
@@ -1291,14 +1446,17 @@ export default function EffortGlass({
     const root = rootRef.current;
     if (root) root.style.setProperty('--eg-popk', Math.max(0.6, st.bub).toFixed(3));
     st.bub = 0;
+    st.slid = false;
     setNap('pop');
     setPops((c) => c + 1);
+    if (!r) fx('pop'); // reduced motion: the whole joke lands at once, so only the chomp plays
     kick();
     // 2. the brain startles awake (eyes open, jolt, cap knocked askew)
-    later(() => { setNap('startle'); }, r ? 0 : NAP_STARTLE);
+    later(() => { setNap('startle'); if (!r) fx('startle'); }, r ? 0 : NAP_STARTLE);
     // 3. the zombie lunges and bites, as before
-    later(() => { st.lunge = 1; setNap('bite'); kick(); }, r ? 0 : NAP_BITE);
+    later(() => { st.lunge = 1; setNap('bite'); if (!r) fx('lunge'); kick(); }, r ? 0 : NAP_BITE);
     later(() => {
+      fx('chomp'); fx('cap'); // crunch + crumbs; the bite knocks the nightcap off
       st.brainless = true; setBrainless(true); setCrunch((c) => c + 1);
       setNap('');
       st.knob.v -= 260; st.sc.v -= 4;
@@ -1311,7 +1469,12 @@ export default function EffortGlass({
     // 4. it chews twice, burps, and goes back to idling (skipped with reduced motion)
     if (!r) {
       const C = NAP_BITE + NAP_CRUNCH, me = (st.meal = (st.meal || 0) + 1);
-      const go = (v) => () => { if (st.meal === me && (st.brainless || !v)) setMunch(v); };
+      const go = (v) => () => {
+        if (st.meal !== me || !(st.brainless || !v)) return;
+        setMunch(v);
+        if (v === 'chew') { fx('chew'); later(() => { if (st.meal === me && st.munch === 'chew') fx('chew', { rate: 0.94 }); }, 320); } // two jaw bobs
+        if (v === 'burp') fx('burp');
+      };
       later(go('chew'), C + MUNCH_CHEW);
       later(go('burp'), C + MUNCH_BURP);
       later(go(''), C + MUNCH_END);
@@ -1425,6 +1588,7 @@ export default function EffortGlass({
       if (st.sayTimer) clearTimeout(st.sayTimer);
       if (st.hideTimer) clearTimeout(st.hideTimer);
       clearSyl();
+      hushFx(); st.fx = null;
       if (st.voice) { st.voice.close(); st.voice = null; }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1435,8 +1599,9 @@ export default function EffortGlass({
   }, [committed]); // eslint-disable-line react-hooks/exhaustive-deps
   // sound on: create the player (it stays suspended until a gesture) and preload the lines; off: hush
   useEffect(() => {
-    if (sound && zombie) ensureVoice();
-    else if (st.voice) st.voice.stop();
+    if (sound) ensureVoice();
+    if (!(sound && zombie) && st.voice) st.voice.stop();
+    if (!sound) hushFx(); else kick(); // sound back on: the loop re-applies the level's beds
   }, [sound, zombie, st.urlKey]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (st.voice) st.voice.setVolume(clamp(+volume || 0, 0, 1)); }, [volume]); // eslint-disable-line react-hooks/exhaustive-deps
   // a new bubble: measure it and hang it over the zombie straight away

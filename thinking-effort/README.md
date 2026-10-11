@@ -81,7 +81,7 @@ Attributes match the props in kebab-case (`easter-eggs`, `levels` and `voices` a
 | `footnote` | string | `'Higher effort takes longer and uses more credits.'` | Footer text. Pass `''` to hide it. |
 | `zombie` | boolean | `true` | Turn the zombie off. Over-pull then just rubber-bands, and `←` at Low gives the knob a small bump. |
 | `easterEggs` | boolean | `true` | The zombie's sneak-up gag at Medium, High and Extra. Always off with `prefers-reduced-motion`. (The Low nap, bubble and pop are part of the Low look, not an easter egg.) |
-| `sound` | boolean | `false` | The zombie's voice: Crazy-Dave-style gibberish (see [Voice](#voice)). Off by default. Nothing is created or downloaded until it is on, and nothing plays before the user touches the slider. |
+| `sound` | boolean | `false` | The zombie's voice: Crazy-Dave-style gibberish (see [Voice](#voice)), plus the showcase video's sound effects (see [Sound effects](#sound-effects)). Off by default. Nothing is created or downloaded until it is on, and nothing plays before the user touches the slider. |
 | `voices` | `{ [look]: (string \| { src, text, syl })[], eat?: …, tick?: string }` | built-in set | Replace any of the lines (a URL keeps the built-in words and timing for that slot; an object brings its own). Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` an optional short sound on each step while dragging (off by default; pass `tick: "tick.mp3"` to turn it on). Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
 | `voiceBase` | string | `'media/voice/'` | Where the built-in files live, relative to the page. With a bundler, copy `media/voice/` into your public folder and point this at it (e.g. `'/effort-voice/'`). |
 | `volume` | number | `0.8` | Voice volume, 0–1. |
@@ -135,6 +135,22 @@ With `sound` on, the zombie talks in Crazy-Dave-style gibberish, recorded by [@n
 - Every line carries its syllable onsets (`VOICE_LINES` export: `{ src, text, syl: [{ t, s }] }`, `t` in seconds into the file; a syllable with `z: 1` is typed but not spoken, like Low's trailing *zzz*). The bubble starts typing the moment the audio starts, and **types at the same pace when muted**. The full line reserves the bubble's width, so it never jumps while typing. With `voices` you can pass plain URLs (they keep the built-in words and timing for that slot) or your own `{ src, text, syl }` objects.
 - Audio is Web Audio, created lazily: the context is unlocked on the first pointer or key press on the slider (autoplay rules), and the ~300 KB of MP3s are fetched only once `sound` is on.
 - The bubble sits above the zombie's head, stays inside the card and never covers the knob: it slides to the knob's right, or lifts over it when there is no room. With `prefers-reduced-motion` it only fades (syllables still appear on time, without the pop).
+
+### Sound effects
+
+The same `sound` switch also plays the showcase video's sound effects (no music), synthesized for the video and embedded as tiny samples (`thinking-effort-sfx.js`, ~220 KB), at the real moments in the component:
+
+| Moment | Sound |
+|---|---|
+| Over-pull past Low | a zombie groan and three shuffling steps as it leans in |
+| The bite | snot-bubble **pop** → **startle** "!" → **lunge** whoosh → **chomp** with crumb ticks and the nightcap whooshing off → two **chews** → **burp** |
+| Drag right while brainless | slide whistle up, then a **boing + sparkle** when the brain grows back |
+| Easter egg (Medium / High / Extra) | four tiptoes as the zombie sneaks up, the "!" **sting** + zombie flinch boing, the **scoot** back |
+| Arrive at Extra | electric **zap**; a soft **hum** with stray crackles while the brain is electric (Extra → Max) |
+| Max | a **sizzle** with steam puffs while it runs hot |
+| Arrive at Big Brain | golden **bell** + choir shimmer + glitter, and the zombie's footsteps as it flees (the scream is the voice line) |
+
+The hum and sizzle are loops that follow the level and fade out as soon as you leave it (or turn `sound` off). Every sample fades in and out, so nothing clicks. Nothing plays before the first touch on the slider, and the levels sit under the voice. With `prefers-reduced-motion` the bite lands at once, so only the chomp plays.
 
 The files in `media/voice/` are the creator's own raw takes, cut at natural pauses, with only a gentle 80 Hz high-pass, light noise reduction, short fades and loudness normalisation to −16 LUFS (true peak ≤ −1.5 dBTP). The two Max lines come from the cleanest take and skip noise reduction: just the high-pass, a gentle peak compressor and −17 LUFS, so the limiter never has to touch them. No pitch shift or effects. MP3 128 kb/s, 48 kHz mono.
 

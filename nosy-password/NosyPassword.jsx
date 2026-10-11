@@ -3,11 +3,82 @@
 // (the teddy flips its ears over them, the corgi turns round and shows you its butt), then sneaks a peek and gets caught. Hide it again and it whistles
 // like nothing happened. Clear the field and it sinks back, disappointed.
 // size="md" (default) fits a sign-in form; size="lg" is the showcase drawing.
+// sound (opt-in): the showcase video's SFX, key clicks, the wake-up boop, gasp, paw pats, tiptoe peek, caught zip + boing, the innocent whistle.
 import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef, useId } from 'react';
+import SFX_DATA from './nosy-password-sfx.js';
 
 const T = { gasp: 180, peekAt: 1100, peekFor: 650, caughtFor: 420, peekEvery: 3600, whistle: 1600, sad: 1300, startle: 420 };
 const reduced = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ---------- sound (muted unless `sound`): the showcase video's SFX as tiny embedded samples (sfxport/np_gen.py),
+// with WebAudio blips as a fallback while they decode (or where decoding is unavailable). Every sample fades in and out.
+function makeAudio() {
+  let ctx = null, out = null;
+  const bufs = {}, live = {};
+  const GAIN = SFX_DATA._gain || 1;
+  const get = () => {
+    if (ctx) return ctx;
+    const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+    if (!AC) return null;
+    try { ctx = new AC(); out = ctx.createGain(); out.gain.value = GAIN; out.connect(ctx.destination); } catch (_) { ctx = null; }
+    if (ctx) {
+      for (const [k, url] of Object.entries(SFX_DATA)) {
+        if (k[0] === '_') continue;
+        fetch(url).then((r) => r.arrayBuffer()).then((ab) => new Promise((res, rej) => ctx.decodeAudioData(ab, res, rej))).then((b) => { bufs[k] = b; }).catch(() => {});
+      }
+    }
+    return ctx;
+  };
+  const play = (k, rate = 1) => {
+    const c = get(); if (!c || !bufs[k]) return false;
+    if (c.state === 'suspended') c.resume().catch(() => {});
+    try {
+      const src = c.createBufferSource(), g = c.createGain(), b = bufs[k];
+      src.buffer = b; src.playbackRate.value = rate;
+      const t = c.currentTime, end = t + b.duration / rate;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 0.003);
+      g.gain.setValueAtTime(1, Math.max(t + 0.004, end - 0.008)); g.gain.linearRampToValueAtTime(0, end);
+      src.connect(g).connect(out); src.start(t);
+      live[k] = { src, g }; src.onended = () => { if (live[k] && live[k].src === src) delete live[k]; };
+      return true;
+    } catch (_) { return false; }
+  };
+  const stop = (k) => {
+    const l = live[k]; if (!l) return; delete live[k];
+    try { const t = ctx.currentTime, gp = l.g.gain; gp.cancelScheduledValues(t); gp.setValueAtTime(gp.value, t); gp.linearRampToValueAtTime(0, t + 0.04); l.src.stop(t + 0.045); } catch (_) {}
+  };
+  const tone = (f, dur, type, gain, at = 0, f2) => {
+    const c = get(); if (!c) return;
+    if (c.state === 'suspended') c.resume().catch(() => {});
+    try {
+      const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.02);
+    } catch (_) {}
+  };
+  let kn = 0;
+  const BLIP = {
+    click: () => tone(1400, 0.02, 'square', 0.06),
+    wake: () => tone(330, 0.2, 'sine', 0.12, 0, 660),
+    gasp: () => tone(500, 0.16, 'sine', 0.14, 0, 1300),
+    cover: () => { tone(190, 0.08, 'sine', 0.2, 0.04, 80); tone(200, 0.08, 'sine', 0.16, 0.09, 85); },
+    peek: () => [62, 66, 69].forEach((m, i) => tone(440 * 2 ** ((m - 69) / 12), 0.12, 'sine', 0.08, i * 0.2)),
+    caught: () => { tone(2600, 0.12, 'sine', 0.08, 0, 500); tone(320, 0.4, 'sine', 0.14, 0.02, 500); },
+    whistle: () => [[0, 79, 0.22], [0.24, 83, 0.22], [0.5, 81, 0.18], [0.7, 76, 0.34], [1.08, 79, 0.4]].forEach(([at, m, d]) => tone(440 * 2 ** ((m - 69) / 12), d, 'sine', 0.07, at + 0.05)),
+    sad: () => tone(560, 0.3, 'sine', 0.1, 0, 230),
+  };
+  return {
+    warm: () => { get(); },
+    key: () => { kn = (kn + 1) % 3; play('key' + kn, 0.97 + Math.random() * 0.06) || tone(1500 + Math.random() * 300, 0.012, 'square', 0.03); },
+    fx: (k) => { play(k) || (BLIP[k] && BLIP[k]()); },
+    stop,
+    close: () => { if (ctx && ctx.close) ctx.close().catch(() => {}); ctx = null; },
+  };
+}
+// audio may only start after the page has had a user gesture (no "AudioContext was not allowed to start" warnings)
+const mayPlay = () => typeof navigator !== 'undefined' && (!navigator.userActivation || navigator.userActivation.hasBeenActive);
 
 function EyeIcon({ open }) {
   return (
@@ -287,7 +358,7 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
     value: valueProp, defaultValue = '', onChange,
     revealed: revealedProp, defaultRevealed = false, onRevealChange,
     label = 'Password', placeholder = 'Enter password', name, id: idProp, autoComplete = 'current-password',
-    disabled = false, size = 'md', animal = 'teddy', className = '', style, inputProps,
+    disabled = false, size = 'md', animal = 'teddy', sound = false, className = '', style, inputProps,
   } = props;
   const uid = 'np' + useId().replace(/[^a-zA-Z0-9]/g, '');
   const inputId = idProp || uid + '-in';
@@ -306,7 +377,21 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
 
   const clear = () => { timers.current.forEach(clearTimeout); timers.current = []; };
   const after = (ms, fn) => { timers.current.push(setTimeout(fn, reduced() ? 0 : ms)); };
-  useEffect(() => () => { clear(); cancelAnimationFrame(raf.current); }, []);
+  const audio = useRef(null), soundRef = useRef(sound); soundRef.current = sound;
+  const sfx = (k) => {
+    if (!soundRef.current || !mayPlay()) return;
+    if (!audio.current) audio.current = makeAudio();
+    if (k === 'key') audio.current.key(); else audio.current.fx(k);
+  };
+  const hush = (...ks) => { if (audio.current) ks.forEach((k) => audio.current.stop(k)); };
+  useEffect(() => () => { clear(); cancelAnimationFrame(raf.current); if (audio.current) { audio.current.close(); audio.current = null; } }, []);
+  useEffect(() => {   // start decoding the samples as soon as the user gets near (hover/focus/touch), so the first sound is the real one
+    const el = rootRef.current; if (!sound || !el) return;
+    const warm = () => { if (!audio.current) audio.current = makeAudio(); audio.current.warm(); };
+    const evs = ['pointerenter', 'pointerdown', 'focusin'];
+    evs.forEach((e) => el.addEventListener(e, warm, { once: true, passive: true }));
+    return () => evs.forEach((e) => el.removeEventListener(e, warm));
+  }, [sound]);
 
   // caret position -> where the eyes look
   const measure = useCallback(() => {
@@ -337,6 +422,21 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
     };
     raf.current = requestAnimationFrame(tick);
   };
+
+  // sound follows the choreography: one effect per phase the animal enters
+  const firstPhase = useRef(true);
+  useEffect(() => {
+    if (firstPhase.current) { firstPhase.current = false; return; }
+    if (phase !== 'whistle') hush('whistle');
+    if (phase !== 'peek') hush('peek');
+    if (phase === 'startle') sfx('wake');
+    else if (phase === 'gasp') { if (!reduced()) sfx('gasp'); } // reduced motion: gasp and cover land together, the pats carry it
+    else if (phase === 'cover') sfx('cover');
+    else if (phase === 'peek') sfx('peek');
+    else if (phase === 'caught') sfx('caught');
+    else if (phase === 'whistle') sfx('whistle');
+    else if (phase === 'sad') sfx('sad');
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // reveal / hide choreography
   useEffect(() => {
@@ -371,7 +471,7 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
     const v = e.target.value;
     if (valueProp === undefined) setValueState(v);
     onChange && onChange(v, e);
-    if (v.length > (value || '').length) bump();
+    if (v.length > (value || '').length) { bump(); sfx('key'); }
     requestAnimationFrame(measure);
   };
   const onFocus = () => {
@@ -414,7 +514,7 @@ const NosyPassword = forwardRef(function NosyPassword(props, ref) {
           type="button" className="np-toggle" disabled={disabled}
           aria-label={revealed ? 'Hide password' : 'Show password'} aria-pressed={revealed} aria-controls={inputId}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => { setReveal(!revealed); inRef.current && inRef.current.focus(); }}
+          onClick={() => { sfx('click'); setReveal(!revealed); inRef.current && inRef.current.focus(); }}
         >
           <EyeIcon open={!revealed} />
         </button>

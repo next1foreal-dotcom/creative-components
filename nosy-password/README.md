@@ -22,18 +22,22 @@ import './nosy-password.css';
 <NosyPassword animal="corgi" size="lg" />
 ```
 
-Props: `animal` (`"teddy"`, `"corgi"` or `"bear"`), `value` / `defaultValue` / `onChange(value, event)`, `revealed` / `defaultRevealed` / `onRevealChange(bool)`, `label`, `placeholder`, `name`, `id`, `autoComplete`, `disabled`, `size` (`"md"` or `"lg"`), `inputProps`. Ref: `focus()`, `blur()`, `reveal(bool)`, `input`.
+Props: `animal` (`"teddy"`, `"corgi"` or `"bear"`), `value` / `defaultValue` / `onChange(value, event)`, `revealed` / `defaultRevealed` / `onRevealChange(bool)`, `label`, `placeholder`, `name`, `id`, `autoComplete`, `disabled`, `size` (`"md"` or `"lg"`), `sound` (boolean, default `false`), `inputProps`. Ref: `focus()`, `blur()`, `reveal(bool)`, `input`.
 
 ## Plain HTML
 
 ```html
 <script src="nosy-password.js"></script>
-<nosy-password animal="corgi" label="Password"></nosy-password>
+<nosy-password animal="corgi" label="Password" sound="true"></nosy-password>
 ```
 
 Events: `input` (`detail.value`), `reveal` (`detail.revealed`). See `example.html`.
 
 It's a real `<input type="password">` with a labelled show/hide button (`aria-pressed`), so password managers, keyboard and screen readers work as usual. The animal is decorative and hidden from assistive tech. `prefers-reduced-motion` keeps the poses but drops the motion.
+
+## Sound
+
+`sound` (attribute `sound="true"`) turns on the showcase video's sound effects, off by default: a soft key click per character, a little wake-up boop when it startles awake, a gasp on reveal, paw pats as it covers its eyes, tiptoe notes as it sneaks a peek, a zip + boing when it gets caught, an innocent whistle when you hide the password again, and a small sigh when you clear the field. They are tiny embedded samples (`nosy-password-sfx.js`, ~60 KB) played with Web Audio, fading in and out so nothing clicks. Nothing plays before the page has had a tap or key press (browser autoplay rules); the samples start decoding when the pointer or focus reaches the field. Same sounds for every animal.
 
 ## License
 
