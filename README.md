@@ -2,12 +2,18 @@
 
 Playful, illustrated UI components for AI apps. Each one is a real, usable control with a little story inside it.
 
-| Component | What it is |
-|---|---|
-| [Thinking Effort](./thinking-effort) | A thinking-effort slider. The knob is a brain and a zombie chases it. Pull it too low and the brain gets eaten. |
-| [Model Slot](./model-slot) | A model picker shaped like a tiny slot machine. Swipe the reel or pull the lever, and Opus and Astra hit a jackpot. |
-| [Pixel Dialog](./pixel-dialog) | A chat input that's a 16-bit RPG dialogue box. A mage casts your message as FIRE, FIRA or FIRAGA by its length, listens when you talk, and drops loot when you attach a file. Switch models by changing party members and set thinking effort on an MP bar. |
-| [Nosy Password](./nosy-password) | A password field with a nosy teddy or corgi peeking over it. It watches you type, and when you reveal the password it hides its eyes (the corgi shows you its butt), then sneaks a peek. |
+<table>
+<tr>
+<td width="50%" valign="top"><a href="./thinking-effort"><img src="./thinking-effort/media/preview.gif" alt="Thinking Effort" width="100%"></a><br><b><a href="./thinking-effort">Thinking Effort</a></b><br><sub>A thinking-effort slider. The knob is a brain and a zombie chases it. Pull it too low and the brain gets eaten.</sub></td>
+<td width="50%" valign="top"><a href="./model-slot"><img src="./model-slot/media/preview.gif" alt="Model Slot" width="100%"></a><br><b><a href="./model-slot">Model Slot</a></b><br><sub>A model picker shaped like a tiny slot machine. Swipe the reel or pull the lever, and Opus and Astra hit a jackpot.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="./pixel-dialog"><img src="./pixel-dialog/media/preview.gif" alt="Pixel Dialog" width="100%"></a><br><b><a href="./pixel-dialog">Pixel Dialog</a></b><br><sub>A chat input that's a 16-bit RPG dialogue box. A mage casts your message as FIRE, FIRA or FIRAGA by its length, listens when you talk, and drops loot when you attach a file. Switch models by changing party members and set thinking effort on an MP bar.</sub></td>
+<td width="50%" valign="top"><a href="./nosy-password"><img src="./nosy-password/media/preview.gif" alt="Nosy Password" width="100%"></a><br><b><a href="./nosy-password">Nosy Password</a></b><br><sub>A password field with a nosy teddy or corgi peeking over it. It watches you type, and when you reveal the password it hides its eyes (the corgi shows you its butt), then sneaks a peek.</sub></td>
+</tr>
+</table>
+
+Click a preview to open that component: the code, an offline demo, and the full showcase video with sound.
 
 Every component is a single React 18 file plus one CSS file, with an offline `demo.html` and a showcase video in `media/`.
 
@@ -19,7 +25,6 @@ Every component is a single React 18 file plus one CSS file, with an offline `de
 <thinking-effort value="1"></thinking-effort>
 <model-slot></model-slot>
 <pixel-dialog></pixel-dialog>
-<nosy-password></nosy-password>
 <nosy-password></nosy-password>
 ```
 
