@@ -95,8 +95,10 @@ export const VOICE_LINES = {
     { src: 'eat-1.mp3', text: "mlah-hama… awhamam~", syl: [{ t: 0.17, s: "mlah-" }, { t: 0.355, s: "ha" }, { t: 0.505, s: "ma… " }, { t: 0.67, s: "a" }, { t: 0.945, s: "wha" }, { t: 1.055, s: "mam~" }] },
   ],
 };
-const VOICE_REV = '3';
-const VOICE_TICK = 'tick.mp3'; // the showcase video's glass tick + kalimba note, pitched up a little per level
+const VOICE_REV = '4';
+// the showcase video's drag tick (glass detent + kalimba ping), one file per look, each at the pitch the video
+// plays it at (Low G5 · Medium A5 · High C6 · Extra D6 · Max E6 · Big Brain F#6), played at rate 1
+const VOICE_TICKS = ['tick-0.mp3', 'tick-1.mp3', 'tick-2.mp3', 'tick-3.mp3', 'tick-4.mp3', 'tick-5.mp3'];
 export const VOICE_TEXT = Object.fromEntries(Object.entries(VOICE_LINES).map(([k, v]) => [k, v.map((l) => l.text)]));
 const SAY_MS = 1600; // bubble life (muted); with sound it lasts as long as the line (capped)
 const SAY_EAT_MS = 1100; // the bite's bubble clears before the burp
@@ -259,16 +261,18 @@ function makeSfx(voice) {
   };
   return fx;
 }
-// → { tick: url, 0: [{ url, text, syl }], … }. A custom entry may be a url (it keeps the default line's
+// → { tick: url, ticks: [url × 6], 0: [{ url, text, syl }], … }. `ticks` (per look, rate 1) is the built-in tick;
+// a custom `voices.tick` gives one `tick` url that is pitched per look by playback rate, as before. A custom entry may be a url (it keeps the default line's
 // words and timing for that slot) or { src, text, syl } with its own.
 function voiceUrls(voices, base) {
   const b = base == null ? '' : base;
   // relative files get the voice set's revision so a browser never mixes a cached old take with new code
   const abs = (u) => (/^(https?:|data:|blob:|\/)/.test(u) ? u : b + u + (u.includes('?') ? '' : '?v=' + VOICE_REV));
   const m = {};
-  const t = voices && voices.tick !== undefined ? voices.tick : VOICE_TICK;
-  const t0 = Array.isArray(t) ? t[0] : t;
+  const custom = voices && voices.tick !== undefined;
+  const t0 = custom ? (Array.isArray(voices.tick) ? voices.tick[0] : voices.tick) : '';
   m.tick = t0 ? abs(typeof t0 === 'string' ? t0 : t0.src || '') : '';
+  m.ticks = custom ? null : VOICE_TICKS.map(abs);
   for (const k of Object.keys(VOICE_LINES)) {
     const def = VOICE_LINES[k];
     const o = voices && voices[k] !== undefined ? voices[k] : def;
@@ -1089,7 +1093,8 @@ export default function EffortGlass({
       st.preloaded = true;
       const u = st.urls;
       if (u.tick) st.voice.load(u.tick);
-      for (const k of Object.keys(u)) if (k !== 'tick') u[k].forEach((x) => x.url && st.voice.load(x.url));
+      if (u.ticks) u.ticks.forEach((x) => st.voice.load(x));
+      for (const k of Object.keys(u)) if (k !== 'tick' && k !== 'ticks') u[k].forEach((x) => x.url && st.voice.load(x.url));
     }
   }
   // every user gesture on the component: marks it touched (it never talks before that) and unlocks audio
@@ -1158,13 +1163,16 @@ export default function EffortGlass({
     } else begin(0);
     kick();
   }
-  // a tiny syllable per detent while dragging (pitch rises with the level)
+  // the video's tick per detent while dragging: the built-in set has one file per look (its own pitch, rate 1);
+  // a custom single `voices.tick` is pitched up per look by playback rate
   function blip(look) {
-    if (!st.sound || !st.voice || !st.voice.ready || !st.urls.tick) return;
+    const u = st.urls;
+    if (!st.sound || !st.voice || !st.voice.ready || !u || (!u.tick && !u.ticks)) return;
     const now = Date.now();
     if (now - st.lastTick < 70) return;
     st.lastTick = now;
-    st.voice.play(st.urls.tick, { gain: 0.42, rate: 0.86 + look * 0.07, tick: true });
+    if (u.ticks) st.voice.play(u.ticks[clamp(Math.round(look), 0, u.ticks.length - 1)], { gain: 0.42, tick: true });
+    else st.voice.play(u.tick, { gain: 0.42, rate: 0.86 + look * 0.07, tick: true });
   }
   // a video SFX: only with `sound` on, and never before the first gesture on the component
   const fx = (k, o) => { if (st.sfx && st.touched && st.fx) st.fx.play(k, o); };

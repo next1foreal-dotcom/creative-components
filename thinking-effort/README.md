@@ -82,7 +82,7 @@ Attributes match the props in kebab-case (`easter-eggs`, `levels` and `voices` a
 | `zombie` | boolean | `true` | Turn the zombie off. Over-pull then just rubber-bands, and `←` at Low gives the knob a small bump. |
 | `easterEggs` | boolean | `true` | The zombie's sneak-up gag at Medium, High and Extra. Always off with `prefers-reduced-motion`. (The Low nap, bubble and pop are part of the Low look, not an easter egg.) |
 | `sound` | boolean | `false` | The zombie's voice: Crazy-Dave-style gibberish (see [Voice](#voice)), plus the showcase video's sound effects (see [Sound effects](#sound-effects)). Off by default. Nothing is created or downloaded until it is on, and nothing plays before the user touches the slider. |
-| `voices` | `{ [look]: (string \| { src, text, syl })[], eat?: …, tick?: string }` | built-in set | Replace any of the lines (a URL keeps the built-in words and timing for that slot; an object brings its own). Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` an optional short sound on each step while dragging (off by default; pass `tick: "tick.mp3"` to turn it on). Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
+| `voices` | `{ [look]: (string \| { src, text, syl })[], eat?: …, tick?: string }` | built-in set | Replace any of the lines (a URL keeps the built-in words and timing for that slot; an object brings its own). Keys `0`–`5` are the six looks (Low … Big Brain; the same as the level index with the default 6 levels), `eat` is the over-pull bite, `tick` replaces the drag tick (by default the showcase video's glass tick, one file per look at its own pitch, `tick-0.mp3` … `tick-5.mp3`; a custom tick is one file pitched up per look by playback rate, `""` turns it off). Relative URLs are resolved against `voiceBase`; absolute, `/…`, `data:` and `blob:` URLs are used as is. |
 | `voiceBase` | string | `'media/voice/'` | Where the built-in files live, relative to the page. With a bundler, copy `media/voice/` into your public folder and point this at it (e.g. `'/effort-voice/'`). |
 | `volume` | number | `0.8` | Voice volume, 0–1. |
 | `onChange` | `(index, level) => void` | – | Fired when a new level is committed: on release, a tap, a key press, a label click, or Reset. |
@@ -177,7 +177,7 @@ It never fights the spring engine. The gag is only an **offset added to the zomb
 - `effort-glass.css`: styles
 - `thinking-effort.js`: the same component as a plain-HTML Web Component (`<thinking-effort>`), no React needed
 - `example.html`: the Web Component on a plain page
-- `media/voice/`: the zombie's voice lines (`l0-*.mp3` … `l5-*.mp3`, `eat-*.mp3`, `tick.mp3`)
+- `media/voice/`: the zombie's voice lines (`l0-*.mp3` … `l5-*.mp3`, `eat-*.mp3`, `tick-0.mp3` … `tick-5.mp3`)
 - `demo.html`: fully self-contained preview (React, CSS and the voice lines inline). It opens offline, including in phone file previews. Use the speaker button under the component to turn the sound on.
 
 ## Credits
