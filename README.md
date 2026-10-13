@@ -11,6 +11,10 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 <td width="50%" valign="top"><a href="./pixel-dialog"><img src="./pixel-dialog/media/preview.gif" alt="Pixel Dialog" width="100%"></a><br><b><a href="./pixel-dialog">Pixel Dialog</a></b><br><sub>A chat input that's a 16-bit RPG dialogue box. A mage casts your message as FIRE, FIRA or FIRAGA by its length, listens when you talk, and drops loot when you attach a file. Switch models by changing party members and set thinking effort on an MP bar.</sub></td>
 <td width="50%" valign="top"><a href="./nosy-password"><img src="./nosy-password/media/preview.gif" alt="Nosy Password" width="100%"></a><br><b><a href="./nosy-password">Nosy Password</a></b><br><sub>A password field with a nosy teddy or corgi peeking over it. It watches you type, and when you reveal the password it hides its eyes (the corgi shows you its butt), then sneaks a peek.</sub></td>
 </tr>
+<tr>
+<td width="50%" valign="top"><a href="./chanting-monk"><img src="./chanting-monk/media/preview.gif" alt="Chanting Monk" width="100%"></a><br><b><a href="./chanting-monk">Chanting Monk 唠叨和尚</a></b><br><sub>Streaming-output component: the longer your AI talks, the harder the monk chants. Hit Stop and the monkey stuffs a peach in his mouth.</sub></td>
+<td width="50%" valign="top"></td>
+</tr>
 </table>
 
 Click a preview to open that component: the code, an offline demo, and the full showcase video with sound.
@@ -26,6 +30,7 @@ Every component is a single React 18 file plus one CSS file, with an offline `de
 <model-slot></model-slot>
 <pixel-dialog></pixel-dialog>
 <nosy-password></nosy-password>
+<chanting-monk demo="short" sound="true"></chanting-monk>
 ```
 
 `creative-components.js` has all of them. Each folder's own `<name>.js` has just that one, and `example.html` shows it working. A tiny renderer ([Preact](https://preactjs.com)) is bundled inside, so the page needs nothing else. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
