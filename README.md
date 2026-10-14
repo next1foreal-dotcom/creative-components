@@ -13,7 +13,7 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="./chanting-monk"><img src="./chanting-monk/media/preview.gif" alt="Chanting Monk" width="100%"></a><br><b><a href="./chanting-monk">Chanting Monk 唠叨和尚</a></b><br><sub>Streaming-output component: the longer your AI talks, the harder the monk chants. Hit Stop and the monkey stuffs a peach in his mouth.</sub></td>
-<td width="50%" valign="top"><b><a href="./clone-hairs">Clone Hairs 身外身法</a></b><br><sub>Subagents / parallel-runs component: for every subagent the Monkey King plucks a hair and blows, and a tiny clone hops out to work. Spawn too many and he goes bald, then screams at the mirror.</sub></td>
+<td width="50%" valign="top"><a href="./clone-hairs"><img src="./clone-hairs/media/preview.gif" alt="Clone Hairs" width="100%"></a><br><b><a href="./clone-hairs">Clone Hairs 身外身法</a></b><br><sub>Subagents / parallel-runs component: for every subagent the Monkey King plucks a hair and blows, and a tiny clone hops out to work. Spawn too many and he goes bald, then screams at the mirror.</sub></td>
 </tr>
 </table>
 
