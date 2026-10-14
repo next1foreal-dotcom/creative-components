@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>clone-hairs web component</title>
+<style>body{margin:0;padding:24px;font-family:system-ui;background:#efeeea;display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}.dark{background:#0c0c0c;padding:18px;border-radius:14px}.light{background:#fff;padding:18px;border-radius:14px;border:1px solid rgba(0,0,0,.08)}</style>
+<script src="clone-hairs.js"></script></head><body>
+<div style="display:grid;gap:18px"><div class="dark"><clone-hairs id="a" theme="dark" size="xs"></clone-hairs></div>
+<div class="light"><clone-hairs id="b" theme="light" size="lg" lang="en"></clone-hairs></div></div>
+<div class="dark"><clone-hairs id="p" layout="panel" theme="dark" size="xs"></clone-hairs></div>
+<script>
+// host-driven: el.spawn(id,label,kind) / el.progress(id, 0-1|null, step) / el.done(id) / el.fail(id) / el.finishAll() / el.stop()
+// kind: search (telescope) | code (brush) | run (pickaxe) | anything else = staff. Events: change, retry ({detail:{id,label,kind}})
+const a = document.getElementById('a'), b = document.getElementById('b'), p = document.getElementById('p');
+a.addEventListener('change', (e) => (document.title = 'clones ' + e.detail.active));
+p.addEventListener('retry', (e) => p.spawn(e.detail.id));
+setTimeout(() => { a.play('big'); p.play('big'); for (let i = 0; i < 7; i++) setTimeout(() => b.spawn('t' + i, 'task ' + i), i * 150); }, 300);
+</script></body></html>
