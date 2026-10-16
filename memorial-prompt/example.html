@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><title>memorial-prompt web component</title>
+<style>body{background:#0c0c0c;color:#ddd;font:13px Inter,system-ui,sans-serif;margin:40px;max-width:640px}.hdr{display:flex;gap:6px;align-items:center}</style></head><body>
+<memorial-prompt id="a" theme="dark" size="xs" lang="zh"><div slot="header" class="hdr"><b>Agent</b> · 等待批准</div></memorial-prompt>
+<br><memorial-prompt id="b" theme="light" size="lg" lang="en" style="background:#f6f5f2;padding:16px;border-radius:12px"><div slot="header" class="hdr" style="color:#333"><b>Agent</b> · waiting</div></memorial-prompt>
+<script src="memorial-prompt.js"></script>
+<script>
+const a = document.getElementById('a'), b = document.getElementById('b');
+a.addEventListener('decision', (e) => console.log('decision', e.detail.decision, e.detail.request.command));
+setTimeout(() => { a.ask({ tool: 'Bash', command: 'npm test', summary: '跑单测' }); b.ask({ tool: 'Bash', command: 'sudo rm -rf /var/cache' }); }, 100);
+</script></body></html>

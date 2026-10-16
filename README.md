@@ -15,6 +15,10 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 <td width="50%" valign="top"><a href="./chanting-monk"><img src="./chanting-monk/media/preview.gif" alt="Chanting Monk" width="100%"></a><br><b><a href="./chanting-monk">Chanting Monk 唠叨和尚</a></b><br><sub>Streaming-output component: the longer your AI talks, the harder the monk chants. Hit Stop and the monkey stuffs a peach in his mouth.</sub></td>
 <td width="50%" valign="top"><a href="./clone-hairs"><img src="./clone-hairs/media/preview.gif" alt="Clone Hairs" width="100%"></a><br><b><a href="./clone-hairs">Clone Hairs 身外身法</a></b><br><sub>Subagents / parallel-runs component: for every subagent the Monkey King plucks a hair and blows, and a tiny clone hops out to work. Spawn too many and he goes bald, then screams at the mirror.</sub></td>
 </tr>
+<tr>
+<td width="50%" valign="top"><a href="./memorial-prompt"><!-- preview.gif to come --></a><b><a href="./memorial-prompt">Your Majesty, Approve? 皇上批奏折</a></b><br><sub>Permission-prompt component: your agent kneels with a memorial holding the tool call. Allow and he kowtows, deny and the memorial slaps him, dangerous commands need a press-and-hold, and approve 3 in a row without reading and a big red 「昏君」 seal stamps across the prompt.</sub></td>
+<td width="50%" valign="top"></td>
+</tr>
 </table>
 
 Click a preview to open that component: the code, an offline demo, and the full showcase video with sound.
@@ -32,6 +36,7 @@ Every component is a single React 18 file plus one CSS file, with an offline `de
 <nosy-password></nosy-password>
 <chanting-monk demo="short" sound="true"></chanting-monk>
 <clone-hairs demo="big" sound="true"></clone-hairs>
+<memorial-prompt request='{"tool":"Bash","command":"npm test"}' sound="true"></memorial-prompt>
 ```
 
 `creative-components.js` has all of them. Each folder's own `<name>.js` has just that one, and `example.html` shows it working. A tiny renderer ([Preact](https://preactjs.com)) is bundled inside, so the page needs nothing else. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
