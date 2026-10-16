@@ -4,7 +4,9 @@ A permission / approval prompt for AI agents. When your agent wants to run a too
 
 It's a real permission prompt underneath: it shows the tool and the command, fires `onDecision` the moment you decide, and works with keyboard and screen readers.
 
-<!-- gallery media (media/showcase.mp4, poster.png, preview.gif) lands here with the showcase video -->
+[![皇上批奏折 showcase](media/poster.png)](media/showcase.mp4)
+
+▶ [Watch the showcase](media/showcase.mp4) · [Try it live](https://heynext1.com)
 
 ## States and gags
 
