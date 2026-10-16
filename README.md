@@ -16,7 +16,7 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 <td width="50%" valign="top"><a href="./clone-hairs"><img src="./clone-hairs/media/preview.gif" alt="Clone Hairs" width="100%"></a><br><b><a href="./clone-hairs">Clone Hairs 身外身法</a></b><br><sub>Subagents / parallel-runs component: for every subagent the Monkey King plucks a hair and blows, and a tiny clone hops out to work. Spawn too many and he goes bald, then screams at the mirror.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="./memorial-prompt"><!-- preview.gif to come --></a><b><a href="./memorial-prompt">Your Majesty, Approve? 皇上批奏折</a></b><br><sub>Permission-prompt component: your agent kneels with a memorial holding the tool call. Allow and he kowtows, deny and the memorial slaps him, dangerous commands need a press-and-hold, and approve 3 in a row without reading and a big red 「昏君」 seal stamps across the prompt.</sub></td>
+<td width="50%" valign="top"><a href="./memorial-prompt"><img src="./memorial-prompt/media/preview.gif" alt="Your Majesty, Approve?" width="100%"></a><br><b><a href="./memorial-prompt">Your Majesty, Approve? 皇上批奏折</a></b><br><sub>Permission-prompt component: your agent kneels with a memorial holding the tool call. Allow and he kowtows, deny and the memorial slaps him, dangerous commands need a press-and-hold, and approve 3 in a row without reading and a big red 「昏君」 seal stamps across the prompt.</sub></td>
 <td width="50%" valign="top"></td>
 </tr>
 </table>
