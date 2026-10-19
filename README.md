@@ -17,7 +17,7 @@ Playful, illustrated UI components for AI apps. Each one is a real, usable contr
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="./memorial-prompt"><img src="./memorial-prompt/media/preview.gif" alt="Your Majesty, Approve?" width="100%"></a><br><b><a href="./memorial-prompt">Your Majesty, Approve? 皇上批奏折</a></b><br><sub>Permission-prompt component: your agent kneels with a memorial holding the tool call. Allow and he kowtows, deny and the memorial slaps him, dangerous commands need a press-and-hold, and approve 3 in a row without reading and a big red 「昏君」 seal stamps across the prompt.</sub></td>
-<td width="50%" valign="top"></td>
+<td width="50%" valign="top"><a href="./clawd-perch"><img src="./clawd-perch/media/preview.gif" alt="Clawd on the Composer" width="100%"></a><br><b><a href="./clawd-perch">Clawd on the Composer</a></b><br><sub>Agent-status component: a pixel Clawd sits on your composer and acts out what the agent is doing. It hauls a box per tool call, holds up a "May I?" sign for permissions, falls off on errors, sheds its shell on /compact and snores when you say good night. Unofficial fan tribute.</sub></td>
 </tr>
 </table>
 
@@ -37,6 +37,7 @@ Every component is a single React 18 file plus one CSS file, with an offline `de
 <chanting-monk demo="short" sound="true"></chanting-monk>
 <clone-hairs demo="big" sound="true"></clone-hairs>
 <memorial-prompt request='{"tool":"Bash","command":"npm test"}' sound="true"></memorial-prompt>
+<clawd-perch lang="en"></clawd-perch>
 ```
 
 `creative-components.js` has all of them. Each folder's own `<name>.js` has just that one, and `example.html` shows it working. A tiny renderer ([Preact](https://preactjs.com)) is bundled inside, so the page needs nothing else. They're keyboard and screen-reader accessible, SSR-safe and respect `prefers-reduced-motion`.
