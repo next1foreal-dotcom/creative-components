@@ -1,0 +1,8 @@
+.clawd-perch{position:relative;display:block;pointer-events:none;line-height:0}
+.clawd-perch canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.clawd-perch__hit{position:absolute;pointer-events:auto;background:transparent;border:0;padding:0;margin:0;cursor:pointer;border-radius:4px}
+.clawd-perch__hit:focus-visible{outline:2px solid #D97757;outline-offset:2px}
+.clawd-perch__sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Anchor helper: put .clawd-perch-anchor on your composer wrapper and Clawd sits on its top edge */
+.clawd-perch-anchor{position:relative}
+.clawd-perch-anchor>.clawd-perch,.clawd-perch-anchor>clawd-perch{position:absolute;left:0;right:0;bottom:100%}
