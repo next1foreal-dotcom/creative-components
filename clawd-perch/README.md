@@ -1,6 +1,6 @@
 # Clawd on the Composer
 
-A tiny pixel Clawd that lives on the top edge of an AI chat composer and acts out what the agent is doing: it paces while thinking, reads a book for `Read`, sweeps a magnifier for `Grep`, types on a laptop for `Edit` and while the reply streams, hauls a box for other tool calls, holds up a sign when it needs permission, runs a taxi meter while tokens stream, falls off the edge on errors, and snores when you say good night. One `<canvas>`, no images, no dependencies; every sound is synthesized 8-bit.
+A tiny pixel Clawd that lives on the top edge of an AI chat composer and acts out what the agent is doing: it paces while thinking, ticks off a clipboard for `TodoWrite`, reads a book for `Read`, sweeps a magnifier for `Grep`, surfs a wave for `WebSearch`/`WebFetch`, sends out three mini clones for `Task`, types on a laptop for `Edit` and while the reply streams, hauls a box for other tool calls, holds up a sign when it needs permission, runs a taxi meter while tokens stream, falls off the edge on errors, and snores when you say good night. One `<canvas>`, no images, no dependencies; every sound is synthesized 8-bit.
 
 > **Unofficial fan tribute.** Clawd is Anthropic's mascot for Claude Code. This project is not affiliated with or endorsed by Anthropic. The Clawd character © Anthropic and is **not** covered by this repo's license; only the code is.
 
@@ -17,8 +17,9 @@ A tiny pixel Clawd that lives on the top edge of an AI chat composer and acts ou
 | `typing(len)` | Watches you type. Typing past 200 characters makes it jump ("whoa"); deleting a long draft makes it shrug. |
 | `paste(chars)` | Gets buried under a stack of paper (more paper for longer pastes). |
 | `send(text)` | Paces back and forth, thinking. The message text also triggers reactions: "thanks / 谢谢" → hearts, "haha / 哈哈" → laughs, an insult → sad, "good night / 晚安" → waves and falls asleep, "good morning / 早安" → yawns awake. |
-| `tool(name)` | Acts out the tool by name: `Read`/`Glob`/`LS` → reads a book (page flips), `Grep`/`*Search`/`Find` → sweeps a magnifier, then "!" when found, `Edit`/`Write`/`MultiEdit` → types on a laptop, anything else (`Bash`, `WebFetch`, …) → carries a labelled box (4+ boxes stack up). Calls queue up and play one after another. |
+| `tool(name)` | Acts out the tool by name: `TodoWrite` → ticks off a clipboard, `Read`/`Glob`/`LS` → reads a book (page flips), `WebSearch`/`WebFetch` → surfs a wave across the composer, `Task`/`Agent` → three mini clones run out and merge back, `Grep`/`*Search`/`Find` → sweeps a magnifier, then "!" when found, `Edit`/`Write`/`MultiEdit` → types on a laptop, anything else (`Bash`, `WebFetch`, …) → carries a labelled box (4+ boxes stack up). Calls queue up and play one after another. |
 | `ask()` | Holds up a "May I? / 可以吗？" sign. `decide(true)` nods, `decide(false)` shakes its head. |
+| `grab()` / `dragTo(x, y)` / `drop()` | Pick-up. Both wrappers wire this to pointer drag on Clawd (click still pets): it dangles with its legs kicking, drops with a thud and walks home. Shake it hard while holding and it lands dizzy. |
 | `stream()` | Types on a laptop (soft key clacks, code glyphs float up) and runs a taxi meter (`$`, tokens or % of context, click to cycle) fed by `cost()`. |
 | `done()` | Small hop. If the run had 3+ tools and zero errors, it puts on sunglasses and struts instead. |
 | `error()` | Falls off the composer, then climbs back up. |

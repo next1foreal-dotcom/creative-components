@@ -20,7 +20,7 @@ const ClawdPerch = forwardRef(function ClawdPerch({ status, context, cost, size 
     const ro = new ResizeObserver(() => e.resize(wrap.current.clientWidth || 600)); ro.observe(wrap.current);
     const unlock = () => e.sfx._c(); addEventListener('pointerdown', unlock, { once: true, capture: true });
     eng.current = e;
-    const unbind = e.bindDom(wrap.current);
+    const u1 = e.bindDom(wrap.current), u2 = e.bindDrag(pet.current); const unbind = () => { u1(); u2(); };
     return () => { unbind(); e.destroy(); ro.disconnect(); removeEventListener('pointerdown', unlock, true); };
   }, [size]);
   useEffect(() => { eng.current && status && eng.current.setStatus(status); }, [status]);

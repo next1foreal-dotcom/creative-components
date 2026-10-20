@@ -6,11 +6,11 @@ const BODY=[".XXXXXXXXXX.",".XXXXXXXXXX.","XXXXXXXXXXXX","XXXXXXXXXXXX",".XXXXXX
 const LEGS={stand:["..X.X..X.X..","..X.X..X.X.."],a:["..X.X..X.X..","..X....X...."],b:["..X.X..X.X..","....X....X.."],tuck:["..X.X..X.X..","............"]};
 const C={body:'#D97757',ink:'#141414',blush:'#F2A48F',sweat:'#7FB8E6',gold:'#F2C94C',heart:'#E8586B',box:'#B7894F',boxD:'#8F6A3A',sign:'#F3EFE6',post:'#6B5A44',dust:'#6f6a62',sand:'#C9A66B',sandD:'#A9884F',meter:'#1d1d1b',green:'#7CFF6B',yellow:'#FFD15C',red:'#FF6B5C',text:'#a8a39a',shell:'#F0B49C',steam:'#cfcac2',cloud:'#77736b',paper:'#F3EFE6',paperL:'#bdb7aa',mug:'#E8E6E1',coffee:'#6B4A2E',angry:'#E2553F',lid:'#B9B4AA',lidD:'#8D887F',lens:'#BFE3F5',cover:'#4E6E8E',code:'#7CFF6B'};
 const VERBS={zh:['思考中','琢磨中','酝酿中','盘算中','推敲中','脑补中','发酵中','钻研中'],en:['Pondering','Noodling','Cogitating','Schlepping','Percolating','Ruminating','Moseying','Combobulating']};
-const L={zh:{pat:'开心',angry:'生气了',look:'东张西望',snip:'夹夹',yawn:'打哈欠',dance:'跳舞',wow:'吓一跳',shrug:'耸肩',paper:'被粘贴的文字淹没',laugh:'大笑',sad:'难过',night:'晚安',wave:'欢迎回来',ask:'可以吗？',idle:'闲置',typing:'看你打字',thinking:'思考中',streaming:'输出中',tool:'使用工具',ask_:'等待你允许',limit:'额度用完，重置倒计时',error:'出错了',done:'完成',compact:'蜕壳（压缩上下文）',stop:'已停止',dizzy:'被刹车到晕',cool:'零错误完成',love:'害羞',sleep:'睡着了',meter:'切换跳表显示',pet:'摸摸 Clawd',type:'敲代码',read:'翻资料',grep:'拿放大镜找'},
- en:{pat:'Happy',angry:'Annoyed',look:'Looking around',snip:'Snip snip',yawn:'Yawning',dance:'Dancing',wow:'Whoa',shrug:'Shrug',paper:'Buried in pasted text',laugh:'Laughing',sad:'Sad',night:'Good night',wave:'Welcome back',ask:'May I?',idle:'Idle',typing:'Watching you type',thinking:'Thinking',streaming:'Writing',tool:'Using a tool',ask_:'Waiting for permission',limit:'Usage limit, resets in',error:'Error',done:'Done',compact:'Molting (compacting context)',stop:'Stopped',dizzy:'Dizzy from braking',cool:'Flawless run',love:'Blushing',sleep:'Asleep',meter:'Toggle meter',pet:'Pet Clawd',type:'Typing code',read:'Reading',grep:'Searching'}};
+const L={zh:{pat:'开心',angry:'生气了',look:'东张西望',snip:'夹夹',yawn:'打哈欠',dance:'跳舞',wow:'吓一跳',shrug:'耸肩',paper:'被粘贴的文字淹没',laugh:'大笑',sad:'难过',night:'晚安',wave:'欢迎回来',ask:'可以吗？',idle:'闲置',typing:'看你打字',thinking:'思考中',streaming:'输出中',tool:'使用工具',ask_:'等待你允许',limit:'额度用完，重置倒计时',error:'出错了',done:'完成',compact:'蜕壳（压缩上下文）',stop:'已停止',dizzy:'被刹车到晕',cool:'零错误完成',love:'害羞',sleep:'睡着了',meter:'切换跳表显示',pet:'摸摸 Clawd',type:'敲代码',read:'翻资料',grep:'拿放大镜找',surf:'上网冲浪',agents:'召唤分身',todo:'列清单',held:'被拎起来了',drop:'落地',shook:'被甩晕了'},
+ en:{pat:'Happy',angry:'Annoyed',look:'Looking around',snip:'Snip snip',yawn:'Yawning',dance:'Dancing',wow:'Whoa',shrug:'Shrug',paper:'Buried in pasted text',laugh:'Laughing',sad:'Sad',night:'Good night',wave:'Welcome back',ask:'May I?',idle:'Idle',typing:'Watching you type',thinking:'Thinking',streaming:'Writing',tool:'Using a tool',ask_:'Waiting for permission',limit:'Usage limit, resets in',error:'Error',done:'Done',compact:'Molting (compacting context)',stop:'Stopped',dizzy:'Dizzy from braking',cool:'Flawless run',love:'Blushing',sleep:'Asleep',meter:'Toggle meter',pet:'Pet Clawd',type:'Typing code',read:'Reading',grep:'Searching',surf:'Surfing the web',agents:'Summoning clones',todo:'Making a list',held:'Picked up',drop:'Landed',shook:'Shaken dizzy'}};
 const ease=t=>1-Math.pow(1-t,3), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* per-sound gain (dB) from verify/loud.py: relative levels before master: events -42, small/frequent -50…-57, sleepy/ambient -50 */
-const SFX_GAIN_DB={ha: 6.1, angry: 3.6, pat: 2.7, wow: 2.3, tick: 2.0, step: 1.4, no: 1.3, blip: 0.3, ask: -0.0, wave: -0.3, send: -0.4, paper: -0.4, dizzy: -0.5, shrug: -0.8, sad: -1.0, yes: -1.0, love: -1.7, cool: -2.9, night: -3.0, done: -3.2, fall: -3.9, snip: -4.2, purr: -4.7, drip: -4.8, pop: -5.0, climb: -5.1, box: -5.7, burst: -7.0, skid: -7.4, snoreIn: -9.2, yawn: -9.3, snoreOut: -12.4, key: -13, page: 2, found: -3};
+const SFX_GAIN_DB={ha: 6.1, angry: 3.6, pat: 2.7, wow: 2.3, tick: 2.0, step: 1.4, no: 1.3, blip: 0.3, ask: -0.0, wave: -0.3, send: -0.4, paper: -0.4, dizzy: -0.5, shrug: -0.8, sad: -1.0, yes: -1.0, love: -1.7, cool: -2.9, night: -3.0, done: -3.2, fall: -3.9, snip: -4.2, purr: -4.7, drip: -4.8, pop: -5.0, climb: -5.1, box: -5.7, burst: -7.0, skid: -7.4, snoreIn: -9.2, yawn: -9.3, snoreOut: -12.4, key: -13, page: 2, found: -3, surf: 6, thud: -4.5, check: -3};
 const SFX_MASTER_DB=16; /* raw (pre-limiter) loudest peak ≈ -3.7 dBFS; events ≈ -25.5 LUFS-M, small/frequent -34…-43, sleepy -32…-36 */
 class Sfx{constructor(){this.ctx=null;this.muted=false}
  _c(){if(this.muted)return null;if(!this.ctx){const A=globalThis.AudioContext||globalThis.webkitAudioContext;if(!A)return null;this.ctx=new A();this.bus=this.ctx.createDynamicsCompressor();/* safety limiter only: balance is set by SFX_GAIN_DB */const B=this.bus;B.threshold.value=-2;B.knee.value=0;B.ratio.value=20;B.attack.value=.001;B.release.value=.12;this.bus.connect(this.ctx.destination)}if(this.ctx.state==='suspended')this.ctx.resume();return this.ctx}
@@ -56,6 +56,9 @@ class Sfx{constructor(){this.ctx=null;this.muted=false}
   case'tick':T(2000,.012,0,{vol:.02});break;
   case'key':/* soft keyboard clack, pitch varies per key */this.noise(.025,0,.035,2200);T(260+Math.random()*120,.02,0,{type:'triangle',vol:.05});break;
   case'page':this.snoise(.14,{vol:.035,f:2600,to:5200,q:.8});break;
+  case'surf':this.snoise(.6,{vol:.045,f:420,to:1500,q:.7});this.snoise(.35,{vol:.02,f:3000,to:1800,q:1});break;
+  case'thud':T(110,.09,0,{type:'triangle',vol:.14});this.noise(.06,0,.05,600);break;
+  case'check':T(1568,.035,0,{vol:.04});T(2093,.05,.04,{vol:.035});break;
   case'found':T(1319,.05,0,{type:'sine',vol:.06});T(1760,.09,.06,{type:'sine',vol:.06});break;}}}
 class ClawdEngine{
  constructor(canvas,o={}){this.cv=canvas;this.g=canvas.getContext('2d');this.size=o.size||'xs';this.lang=o.lang||'zh';this.manual=!!o.manual;this.reduced=!!o.reducedMotion;this.onStatus=o.onStatus||(()=>{});
@@ -69,7 +72,7 @@ class ClawdEngine{
  destroy(){cancelAnimationFrame(this.raf)}
  set mute(v){this.sfx.muted=!!v} 
  label(k){return L[this.lang][k]||k}
- statusText(){const a=this.anim&&this.anim.name;if(a)return this.label(a);if(this.base==='tool')return this.label('tool')+' '+this.toolName;if(this.base==='ask')return this.label('ask_');if(this.base==='limit')return this.label('limit')+' '+this.countdown();return this.label(this.sleeping?'sleep':this.base)}
+ statusText(){if(this.held)return this.label(this.held.shook?'shook':'held');const a=this.anim&&this.anim.name;if(a)return this.label(a);if(this.base==='tool')return this.label('tool')+' '+this.toolName;if(this.base==='ask')return this.label('ask_');if(this.base==='limit')return this.label('limit')+' '+this.countdown();return this.label(this.sleeping?'sleep':this.base)}
  _emit(){this.onStatus(this.statusText())}
  _wake(){this.idleT=0;this.sleeping=false}
  _play(name,dur,extra={}){this.anim={name,t:0,dur,...extra};if(!extra.quiet)this._emit()}
@@ -80,8 +83,8 @@ class ClawdEngine{
  think(){this._wake();this.base='thinking';this._emit()}
  stream(){this._wake();if(this.base!=='streaming'){this.base='streaming';this._emit()}this.lastChunk=this.clock}
  tool(name='Tool'){this._wake();this.run.tools++;this.tools.push(String(name).slice(0,10));if(!this.anim||this.anim.name!=='tool')this._nextTool()}
- _toolKind(n){n=String(n);return /^(edit|write|multiedit|notebook)/i.test(n)?'type':/^(read|view|cat|ls|glob)/i.test(n)?'read':/(grep|search|find)/i.test(n)?'grep':'box'}
- _nextTool(){const n=this.tools.shift();if(n==null)return;this.toolName=n;const kind=this._toolKind(n);if(kind==='box')this.toolIdx=(this.toolIdx||0)+1;this._play('tool',2.2,{label:n,fromX:this.x,idx:this.toolIdx,kind});this.sfx.play({box:'box',type:'key',read:'page',grep:'blip'}[kind])}
+ _toolKind(n){n=String(n);return /^web|fetch|browse/i.test(n)?'surf':/^(task|agent|subagent)/i.test(n)?'agents':/todo/i.test(n)?'todo':/^(edit|write|multiedit|notebook)/i.test(n)?'type':/^(read|view|cat|ls|glob)/i.test(n)?'read':/(grep|search|find)/i.test(n)?'grep':'box'}
+ _nextTool(){const n=this.tools.shift();if(n==null)return;this.toolName=n;const kind=this._toolKind(n);if(kind==='box')this.toolIdx=(this.toolIdx||0)+1;this._play('tool',2.2,{label:n,fromX:this.x,idx:this.toolIdx,kind});this.sfx.play({box:'box',type:'key',read:'page',grep:'blip',surf:'surf',agents:'ask',todo:'page'}[kind])}
  ask(){this._wake();this.base='ask';this.sfx.play('ask');this._emit();return new Promise(r=>this._askResolve=r)}
  decide(ok){if(this.base!=='ask')return;this.base='thinking';this._play(ok?'yes':'no',1.1);this.sfx.play(ok?'yes':'no');this._askResolve&&this._askResolve(!!ok);this._askResolve=null}
  error(){this._wake();this.run.errors++;this._play('error',2.6);this.sfx.play('fall');setTimeout(()=>{},0)}
@@ -102,6 +105,17 @@ class ClawdEngine{
  _fs(k){if(!(this.anim&&this.anim.quiet)||this.fidgetSound)this.sfx.play(k)}
  _queue(k){(this.q=this.q||[]).push(k)}
  bindDom(host){if(typeof window==='undefined')return()=>{};let hid=0;const mv=ev=>{const r=this.cv.getBoundingClientRect();if(ev.clientY<r.top-320||ev.clientY>r.bottom+260){this.lookAt(null);this.hover(false);return}const lx=(ev.clientX-r.left)/this.S,ly=(ev.clientY-r.top)/this.S;this.lookAt(lx);const b=this.crabBox;this.hover(!!b&&lx*this.S>=b.x&&lx*this.S<=b.x+b.w&&ly*this.S>=b.y-this.S*2&&ly*this.S<=b.y+b.h)};const lv=()=>{this.lookAt(null);this.hover(false)};const vis=()=>{if(document.hidden)hid=Date.now();else if(hid&&Date.now()-hid>20000){hid=0;this.welcome()}};addEventListener('pointermove',mv,{passive:true});document.addEventListener('pointerleave',lv);document.addEventListener('visibilitychange',vis);return()=>{removeEventListener('pointermove',mv);document.removeEventListener('pointerleave',lv);document.removeEventListener('visibilitychange',vis)}}
+ /* pick-up: grab() → dragTo(cellX, cellY)… → drop(). Shaking hard while held → dizzy on drop */
+ grab(){if(this.held||(this.anim&&this.anim.name==='tool'))return false;this._wake();this.anim=null;this.held={x:this.x+6,y:this.Hc-8,sh:[],lx:null,dx:0};this.sfx.play('wow');this._emit();return true}
+ dragTo(cx,cy){const h=this.held;if(!h)return;const F=this.Hc-8;const nx=clamp(cx,6,this.Wc-6),ny=clamp(cy,1,F);const dx=nx-h.x;if(Math.abs(dx)>.6){const sg=Math.sign(dx);if(h.dx&&sg!==h.dx){h.sh=h.sh.filter(t=>this.clock-t<1.2);h.sh.push(this.clock);if(h.sh.length>=5&&!h.shook){h.shook=true;this.sfx.play('dizzy');this._emit()}}h.dx=sg}h.x=nx;h.y=ny}
+ drop(){const h=this.held;if(!h)return;this.held=null;this.x=clamp(Math.round(h.x-6),0,this.home);if(h.shook){this._play('dizzy',2.6)}else{this._play('drop',1.1,{fromY:clamp(Math.round(h.y-1),0,this.Hc-8)})}}
+ bindDrag(el){if(!el||typeof window==='undefined')return()=>{};let st=null,sup=0;const loc=ev=>{const r=this.cv.getBoundingClientRect();return[(ev.clientX-r.left)/this.S,(ev.clientY-r.top)/this.S]};
+  const dn=ev=>{if(ev.button)return;st={x:ev.clientX,y:ev.clientY,id:ev.pointerId,on:false};try{el.setPointerCapture(ev.pointerId)}catch(_){}};
+  const mv=ev=>{if(!st||ev.pointerId!==st.id)return;if(!st.on){if(Math.hypot(ev.clientX-st.x,ev.clientY-st.y)<6)return;if(!this.grab()){st=null;return}st.on=true}const[a,b]=loc(ev);this.dragTo(a,b);ev.preventDefault()};
+  const up=()=>{if(st&&st.on){this.drop();sup=1;setTimeout(()=>{sup=0},0)}st=null};
+  const ck=ev=>{if(sup){sup=0;ev.stopImmediatePropagation();ev.preventDefault()}};
+  el.style.touchAction='none';el.addEventListener('pointerdown',dn);el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('click',ck,true);
+  return()=>{el.removeEventListener('pointerdown',dn);el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);el.removeEventListener('click',ck,true)}}
  thanks(){this._wake();this._play('love',2);this.sfx.play('love')}
  pet(){this._wake();const t=this.clock;this.pets=(this.pets||[]).filter(s=>t-s<2.2);this.pets.push(t);if(this.pets.length>=5){this.pets=[];this._play('angry',2.2);this.sfx.play('angry')}else if(!this.anim||this.anim.name==='pat'){this._play('pat',.7);this.sfx.play('pat')}}
  countdown(){if(!this.limitAt)return'';let s=Math.max(0,Math.round((this.limitAt-this.now())/1000));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);s%=60;return`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
@@ -118,11 +132,11 @@ class ClawdEngine{
   if(this.fidgets!==false&&this.base==='idle'&&!this.anim&&!this.sleeping&&!R){this.fidT=(this.fidT==null?10:this.fidT)-dt;if(this.fidT<=0){this.fidT=8+Math.random()*8;this.fidget()}}
   // movement
   let moving=false;
-  if(!this.anim&&!R){const range=Math.min(36,this.home-2);
-   if(this.base==='thinking'){const v=7;this.x+=this.dir*v*dt;if(this.x<this.home-range){this.x=this.home-range;this.dir=1}if(this.x>this.home){this.x=this.home;this.dir=-1}moving=true;if(Math.floor(this.clock/1.6)!==this._vk){this._vk=Math.floor(this.clock/1.6);this.verb=(this.verb+1)%VERBS.zh.length}}
+  if(this.held){}else if(!this.anim&&!R){const range=Math.min(36,this.home-2);
+   if(this.base==='thinking'){const v=7;this.x+=this.dir*v*dt;if(this.x<this.home-range){this.dir=1}if(this.x>this.home){this.x=this.home;this.dir=-1}moving=true;if(Math.floor(this.clock/1.6)!==this._vk){this._vk=Math.floor(this.clock/1.6);this.verb=(this.verb+1)%VERBS.zh.length}}
    else if(this.base==='streaming'){const d=this.home-this.x;this.x+=clamp(d,-12*dt,12*dt);moving=Math.abs(d)>.2}
    else{const d=this.home-this.x;if(Math.abs(d)>.1){this.x+=clamp(d,-12*dt,12*dt);moving=true;this.dir=d>0?1:-1}}}
-  if(R&&!this.anim)this.x=this.home;
+  if(R&&!this.anim&&!this.held)this.x=this.home;
   if(moving){this.walkPh+=dt*(this.base==='streaming'?10:8)}
   this.moving=moving;
   if(this.meter&&this.meter.live&&this.meterTick&&Math.floor(this.clock*3)!==this._mt){this._mt=Math.floor(this.clock*3);this.sfx.play('tick')}
@@ -170,7 +184,8 @@ class ClawdEngine{
   const blink=(this.clock%3.6)<.12;let after=null;this._lap=0;
   const fat=this.ctx>=.95?2:this.ctx>=.7?1:0;o.fat=fat;
   // base pose
-  if(this.sleeping){o.eyes='closed';o.legs='tuck';y=F+1;const z=Math.floor(this.clock*1.5)%4;for(let k=0;k<z;k++)this.text(k?'Z':'z',x-2-k*2.6,y-1-k*2.2,C.text,2.2+k*.6,'right')}
+  if(this.held){const h=this.held;x=h.x-6;y=clamp(Math.round(h.y-1),0,F);o.legs=Math.floor(this.clock*(h.shook?16:9))%2?'a':'b';o.eyes=h.shook?'x':'wide';o.armsUp=true;o.mouth=h.shook?null:'o';if(!h.shook){const dy=Math.floor(this.clock*4)%3;this.px(x+12,y+dy,C.sweat)}else{for(let k=0;k<3;k++){const an=this.clock*7+k*2.1;this.px(x+6+Math.round(Math.cos(an)*6),y-2+Math.round(Math.sin(an)*1.2),C.gold)}}}
+  else if(this.sleeping){o.eyes='closed';o.legs='tuck';y=F+1;const z=Math.floor(this.clock*1.5)%4;for(let k=0;k<z;k++)this.text(k?'Z':'z',x-2-k*2.6,y-1-k*2.2,C.text,2.2+k*.6,'right')}
   else if(this.base==='typing'){o.look=-1;o.eyes=blink?'none':'open';if(Math.floor(this.clock*4)%6===0)y=F-0}
   else if(this.base==='thinking'){o.legs=this.moving?(ph?'a':'b'):'stand';o.look=this.dir<0?-1:0;const v=VERBS[this.lang][this.verb%VERBS[this.lang].length];const dots='.'.repeat(1+Math.floor(this.clock*3)%3);if(!a)this.text(v+dots,x+6,F-4,C.text,2.4,'center',600);if(this.thinkT>25){const dy=Math.floor(this.clock*3)%4;this.px(x+12,y-1+dy,C.sweat);this.px(x+12,y-2+dy,C.sweat)}}
   else if(this.base==='streaming'){o.legs=this.moving?(ph?'a':'b'):'stand';o.eyes=blink?'none':'open';o.look=-1;if(!this.moving)after=this._laptop(Math.round(x),y,true)}
@@ -190,6 +205,16 @@ class ClawdEngine{
    if(n==='tool'&&a.kind==='grep'){const sw=Math.sin(a.t*2.6);x=this.home-5+Math.round(sw*5);o.legs=Math.floor(a.t*8)%2?'a':'b';const dir=Math.cos(a.t*2.6)>0?1:-1;if(dir!==a.d){a.d=dir;this.sfx.play('blip')}o.look=dir>0?1:-1;const hit=a.t>a.dur-.6;if(hit&&!a.f){a.f=1;this.sfx.play('found')}if(hit){x=this.home;o.legs='stand';o.look=0}
      const xx=Math.round(x),yy=y;after=()=>{const g=this.g,lx=xx+6,ly=yy-1;this.px(lx+1,ly,C.lid,3,1);this.px(lx+1,ly+4,C.lid,3,1);this.px(lx,ly+1,C.lid,1,3);this.px(lx+4,ly+1,C.lid,1,3);g.globalAlpha=.75;this.px(lx+1,ly+1,C.lens,3,3);g.globalAlpha=1;this.px(lx+2+(o.look>0?0:-1)+1,ly+2,C.ink,1,2);this.px(lx+1+(o.look>0?1:0),ly+2,C.ink,1,2);this.px(lx+4,ly+5,C.post);this.px(lx+5,ly+6,C.post);
       if(hit){if(Math.floor(a.t*8)%2)this.text('!',xx+6,yy-3,C.gold,3.4,'center',800)}else this.text(a.label,xx+6,yy-3,C.text,2.2,'center',600)}}
+   if(n==='drop'){const fy=a.fromY==null?F:a.fromY,fall=F-fy,T1=fall>2?.3:.05;if(p<T1){const q=p/T1;y=Math.round(fy+fall*q*q);o.eyes='wide';o.legs='a';o.armsUp=true}else{if(!a.k){a.k=1;this.sfx.play('thud')}const q=(p-T1)/(1-T1);if(q<.3){y=F+1;o.legs='tuck';o.eyes=fall>2?'x':'closed';if(Math.floor(a.t*10)%2){this.px(x-2,F+7,C.dust);this.px(x+13,F+7,C.dust)}}else if(q<.55){y=F-1;o.eyes='happy'}else{o.eyes='happy'}}}
+   if(n==='tool'&&a.kind==='surf'){x=this.home-Math.round(Math.sin(p*Math.PI)*18);y=F-3+Math.round(Math.sin(a.t*7));o.legs='tuck';o.eyes='happy';o.armsUp=Math.floor(a.t*3)%2===0;o.wave=!o.armsUp;if(p>.5&&!a.k){a.k=1;this.sfx.play('surf')}
+     const xx=Math.round(x),yy=y;after=()=>{const g=this.g;for(let i=-10;i<this.Wc-xx+2;i++){const X=xx+i,h=1+(Math.sin((X+a.t*16)/2.6)>.25?1:0);g.globalAlpha=.85;this.px(X,F+8-h,C.sweat,1,h);g.globalAlpha=1;if(h===2&&(X+Math.floor(a.t*16))%3===0&&(X<xx-1||X>xx+12))this.px(X,F+5,C.paper)}
+      this.px(xx-1,yy+8,C.gold,14,1);this.px(xx-2,yy+7,C.gold);this.px(xx+5,yy+8,C.angry,2,1);this.text(a.label,xx+6,yy-2,C.text,2.2,'center',600)}}
+   if(n==='tool'&&a.kind==='agents'){const xx=Math.round(x),yy=y;o.eyes=p<.15?'wide':'happy';o.armsUp=p<.15||p>.92;if(p>=.15&&!a.k){a.k=1;this.sfx.play('pop')}if(p>=.78&&!a.r){a.r=1;this.sfx.play('climb')}if(p>=.95&&!a.m){a.m=1;this.sfx.play('done')}
+     after=()=>{const ph=p<.15?-1:p<.5?(p-.15)/.35:p<.75?1:p<.95?1-(p-.75)/.2:-1;if(ph>=0)for(let k=0;k<3;k++){const tx=Math.max(1,xx-9-k*9),mx=Math.round(xx+3+(tx-xx-3)*ease(ph)),hop=p>.5&&p<.75?Math.round(Math.abs(Math.sin(a.t*9+k))*2):0,my=F+4-hop,lg=Math.floor(a.t*12+k)%2;
+       this.px(mx+1,my,C.body,4,1);this.px(mx,my+1,C.body,6,1);this.px(mx+1,my+2,C.body,4,1);this.px(mx+1+lg,my+3,C.body);this.px(mx+4-lg,my+3,C.body);this.px(mx+1,my+1,C.ink);this.px(mx+4,my+1,C.ink)}
+      if(p>.93)[[-2,0],[13,0],[5,-3]].forEach(([i,j],k)=>{if((Math.floor(a.t*10)+k)%2)this.px(xx+i,yy+j,C.gold)});this.text(a.label+' ×3',xx+6,yy-2,C.text,2.2,'center',600)}}
+   if(n==='tool'&&a.kind==='todo'){o.look=1;o.eyes=blink?'none':'open';const xx=Math.round(x),yy=y;const done_=[.3,.5,.7].filter(v=>p>=v).length;if(done_!==(a.k||0)){a.k=done_;this.sfx.play('check')}
+     after=()=>{this.px(xx+7,yy+1,C.box,6,7);this.px(xx+8,yy+2,C.paper,4,5);this.px(xx+9,yy,C.lidD,2,2);for(let r=0;r<3;r++){const ry=yy+2+r*2;if(r<done_){this.px(xx+8,ry,C.code)}else this.px(xx+8,ry,C.paperL);this.px(xx+10,ry,r<done_?C.paperL:C.lidD,2,1)}this.text(a.label,xx+6,yy-2,C.text,2.2,'center',600)}}
    if(n==='tool'&&(a.kind||'box')==='box'){const t=a.t,go=.9,back=.9,hold=a.dur-go-back;let xx;if(t<go)xx=a.fromX+ease(t/go)*(this.Wc+14-a.fromX);else if(t<go+hold)xx=this.Wc+14;else xx=this.Wc+14-ease((t-go-hold)/back)*(this.Wc+14-this.home);x=xx;o.legs=Math.floor(t*12)%2?'a':'b';o.armsUp=true;
      const stk=clamp((a.idx||0)-3,0,2);after=()=>{const bx=x+1,by=y-5;for(let k=0;k<=stk;k++){const wx=k?(Math.floor(this.clock*6+k)%2?k:-k)*.5:0,yy=by-k*4;this.px(bx+Math.round(wx),yy,C.box,10,4);this.px(bx+Math.round(wx),yy,C.boxD,10,1);this.px(bx+Math.round(wx)+4,yy,C.boxD,2,4)}this.text(a.label,x+6,by-1-stk*4,C.text,2.2,'center',600);if(stk){const dy=Math.floor(this.clock*4)%3;this.px(x+12,y+dy,C.sweat)}}}
    if(n==='yes'){y=F-Math.round(Math.abs(Math.sin(p*Math.PI*2))*2);o.eyes='happy'}
@@ -262,11 +287,11 @@ class ClawdPerchEl extends HTMLElement{
   const unlock=()=>{e.sfx._c();removeEventListener('pointerdown',unlock,true);removeEventListener('keydown',unlock,true)};addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
   this.ro=new ResizeObserver(()=>e.resize(this.clientWidth||600));this.ro.observe(this);
   const st=this.getAttribute('status');if(st)e.setStatus(st);const cx=this.getAttribute('context');if(cx)e.context(+cx);
-  this._unbind=e.bindDom(this);const orig=e.render.bind(e);e.render=()=>{orig();this._place()}}
+  const u1=e.bindDom(this),u2=e.bindDrag(this.$pet);this._unbind=()=>{u1();u2()};const orig=e.render.bind(e);e.render=()=>{orig();this._place()}}
  disconnectedCallback(){this._unbind&&this._unbind();this.engine&&this.engine.destroy();this.ro&&this.ro.disconnect();this.engine=null}
  _place(){const e=this.engine,b=e.crabBox,m=e.meterBox;if(b)Object.assign(this.$pet.style,{left:b.x+'px',top:b.y+'px',width:b.w+'px',height:b.h+'px'});if(m){this.$m.hidden=false;Object.assign(this.$m.style,{left:m.x+'px',top:m.y+'px',width:m.w+'px',height:m.h+'px'})}else this.$m.hidden=true}
  attributeChangedCallback(n,o,v){const e=this.engine;if(!e)return;if(n==='status'&&v)e.setStatus(v);if(n==='mute')e.mute=v!=null;if(n==='context')e.context(+v);if(n==='meter-tick')e.meterTick=v!=null;if(n==='no-snore')e.snoreSound=v==null;if(n==='fidget-sound')e.fidgetSound=v!=null;if(n==='no-fidget')e.fidgets=v==null;if(n==='lang'){e.lang=v||'zh'}}
 }
-['setStatus','typing','send','think','stream','tool','ask','decide','error','done','stop','context','compact','limit','cost','thanks','pet','tick','paste','welcome','fidget','lookAt','hover','nightMode'].forEach(k=>{ClawdPerchEl.prototype[k]=function(...a){return this.engine&&this.engine[k](...a)}});
+['setStatus','typing','send','think','stream','tool','ask','decide','error','done','stop','context','compact','limit','cost','thanks','pet','tick','paste','welcome','fidget','lookAt','hover','nightMode','grab','dragTo','drop'].forEach(k=>{ClawdPerchEl.prototype[k]=function(...a){return this.engine&&this.engine[k](...a)}});
 if(!customElements.get('clawd-perch'))customElements.define('clawd-perch',ClawdPerchEl);
 if(typeof window!=='undefined')window.ClawdEngine=ClawdEngine;})();
