@@ -4,13 +4,13 @@
    Framework-free engine: canvas renderer + state machine + 8-bit sound. */
 const BODY=[".XXXXXXXXXX.",".XXXXXXXXXX.","XXXXXXXXXXXX","XXXXXXXXXXXX",".XXXXXXXXXX.",".XXXXXXXXXX."];
 const LEGS={stand:["..X.X..X.X..","..X.X..X.X.."],a:["..X.X..X.X..","..X....X...."],b:["..X.X..X.X..","....X....X.."],tuck:["..X.X..X.X..","............"]};
-const C={body:'#D97757',ink:'#141414',blush:'#F2A48F',sweat:'#7FB8E6',gold:'#F2C94C',heart:'#E8586B',box:'#B7894F',boxD:'#8F6A3A',sign:'#F3EFE6',post:'#6B5A44',dust:'#6f6a62',sand:'#C9A66B',sandD:'#A9884F',meter:'#1d1d1b',green:'#7CFF6B',yellow:'#FFD15C',red:'#FF6B5C',text:'#a8a39a',shell:'#F0B49C',steam:'#cfcac2',cloud:'#77736b',paper:'#F3EFE6',paperL:'#bdb7aa',mug:'#E8E6E1',coffee:'#6B4A2E',angry:'#E2553F'};
+const C={body:'#D97757',ink:'#141414',blush:'#F2A48F',sweat:'#7FB8E6',gold:'#F2C94C',heart:'#E8586B',box:'#B7894F',boxD:'#8F6A3A',sign:'#F3EFE6',post:'#6B5A44',dust:'#6f6a62',sand:'#C9A66B',sandD:'#A9884F',meter:'#1d1d1b',green:'#7CFF6B',yellow:'#FFD15C',red:'#FF6B5C',text:'#a8a39a',shell:'#F0B49C',steam:'#cfcac2',cloud:'#77736b',paper:'#F3EFE6',paperL:'#bdb7aa',mug:'#E8E6E1',coffee:'#6B4A2E',angry:'#E2553F',lid:'#B9B4AA',lidD:'#8D887F',lens:'#BFE3F5',cover:'#4E6E8E',code:'#7CFF6B'};
 const VERBS={zh:['思考中','琢磨中','酝酿中','盘算中','推敲中','脑补中','发酵中','钻研中'],en:['Pondering','Noodling','Cogitating','Schlepping','Percolating','Ruminating','Moseying','Combobulating']};
-const L={zh:{pat:'开心',angry:'生气了',look:'东张西望',snip:'夹夹',yawn:'打哈欠',dance:'跳舞',wow:'吓一跳',shrug:'耸肩',paper:'被粘贴的文字淹没',laugh:'大笑',sad:'难过',night:'晚安',wave:'欢迎回来',ask:'可以吗？',idle:'闲置',typing:'看你打字',thinking:'思考中',streaming:'输出中',tool:'使用工具',ask_:'等待你允许',limit:'额度用完，重置倒计时',error:'出错了',done:'完成',compact:'蜕壳（压缩上下文）',stop:'已停止',dizzy:'被刹车到晕',cool:'零错误完成',love:'害羞',sleep:'睡着了',meter:'切换跳表显示',pet:'摸摸 Clawd'},
- en:{pat:'Happy',angry:'Annoyed',look:'Looking around',snip:'Snip snip',yawn:'Yawning',dance:'Dancing',wow:'Whoa',shrug:'Shrug',paper:'Buried in pasted text',laugh:'Laughing',sad:'Sad',night:'Good night',wave:'Welcome back',ask:'May I?',idle:'Idle',typing:'Watching you type',thinking:'Thinking',streaming:'Writing',tool:'Using a tool',ask_:'Waiting for permission',limit:'Usage limit, resets in',error:'Error',done:'Done',compact:'Molting (compacting context)',stop:'Stopped',dizzy:'Dizzy from braking',cool:'Flawless run',love:'Blushing',sleep:'Asleep',meter:'Toggle meter',pet:'Pet Clawd'}};
+const L={zh:{pat:'开心',angry:'生气了',look:'东张西望',snip:'夹夹',yawn:'打哈欠',dance:'跳舞',wow:'吓一跳',shrug:'耸肩',paper:'被粘贴的文字淹没',laugh:'大笑',sad:'难过',night:'晚安',wave:'欢迎回来',ask:'可以吗？',idle:'闲置',typing:'看你打字',thinking:'思考中',streaming:'输出中',tool:'使用工具',ask_:'等待你允许',limit:'额度用完，重置倒计时',error:'出错了',done:'完成',compact:'蜕壳（压缩上下文）',stop:'已停止',dizzy:'被刹车到晕',cool:'零错误完成',love:'害羞',sleep:'睡着了',meter:'切换跳表显示',pet:'摸摸 Clawd',type:'敲代码',read:'翻资料',grep:'拿放大镜找'},
+ en:{pat:'Happy',angry:'Annoyed',look:'Looking around',snip:'Snip snip',yawn:'Yawning',dance:'Dancing',wow:'Whoa',shrug:'Shrug',paper:'Buried in pasted text',laugh:'Laughing',sad:'Sad',night:'Good night',wave:'Welcome back',ask:'May I?',idle:'Idle',typing:'Watching you type',thinking:'Thinking',streaming:'Writing',tool:'Using a tool',ask_:'Waiting for permission',limit:'Usage limit, resets in',error:'Error',done:'Done',compact:'Molting (compacting context)',stop:'Stopped',dizzy:'Dizzy from braking',cool:'Flawless run',love:'Blushing',sleep:'Asleep',meter:'Toggle meter',pet:'Pet Clawd',type:'Typing code',read:'Reading',grep:'Searching'}};
 const ease=t=>1-Math.pow(1-t,3), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* per-sound gain (dB) from verify/loud.py: relative levels before master: events -42, small/frequent -50…-57, sleepy/ambient -50 */
-const SFX_GAIN_DB={ha: 6.1, angry: 3.6, pat: 2.7, wow: 2.3, tick: 2.0, step: 1.4, no: 1.3, blip: 0.3, ask: -0.0, wave: -0.3, send: -0.4, paper: -0.4, dizzy: -0.5, shrug: -0.8, sad: -1.0, yes: -1.0, love: -1.7, cool: -2.9, night: -3.0, done: -3.2, fall: -3.9, snip: -4.2, purr: -4.7, drip: -4.8, pop: -5.0, climb: -5.1, box: -5.7, burst: -7.0, skid: -7.4, snoreIn: -9.2, yawn: -9.3, snoreOut: -12.4};
+const SFX_GAIN_DB={ha: 6.1, angry: 3.6, pat: 2.7, wow: 2.3, tick: 2.0, step: 1.4, no: 1.3, blip: 0.3, ask: -0.0, wave: -0.3, send: -0.4, paper: -0.4, dizzy: -0.5, shrug: -0.8, sad: -1.0, yes: -1.0, love: -1.7, cool: -2.9, night: -3.0, done: -3.2, fall: -3.9, snip: -4.2, purr: -4.7, drip: -4.8, pop: -5.0, climb: -5.1, box: -5.7, burst: -7.0, skid: -7.4, snoreIn: -9.2, yawn: -9.3, snoreOut: -12.4, key: -13, page: 2, found: -3};
 const SFX_MASTER_DB=16; /* raw (pre-limiter) loudest peak ≈ -3.7 dBFS; events ≈ -25.5 LUFS-M, small/frequent -34…-43, sleepy -32…-36 */
 class Sfx{constructor(){this.ctx=null;this.muted=false}
  _c(){if(this.muted)return null;if(!this.ctx){const A=globalThis.AudioContext||globalThis.webkitAudioContext;if(!A)return null;this.ctx=new A();this.bus=this.ctx.createDynamicsCompressor();/* safety limiter only: balance is set by SFX_GAIN_DB */const B=this.bus;B.threshold.value=-2;B.knee.value=0;B.ratio.value=20;B.attack.value=.001;B.release.value=.12;this.bus.connect(this.ctx.destination)}if(this.ctx.state==='suspended')this.ctx.resume();return this.ctx}
@@ -53,7 +53,10 @@ class Sfx{constructor(){this.ctx=null;this.muted=false}
   case'blip':T(1200,.025,0,{type:'sine',vol:.04});break;
   case'purr':T(330,.09,0,{type:'triangle',vol:.05});T(392,.12,.1,{type:'triangle',vol:.05});break;
   case'drip':T(1500,.06,0,{type:'sine',to:600,vol:.06});break;
-  case'tick':T(2000,.012,0,{vol:.02});break;}}}
+  case'tick':T(2000,.012,0,{vol:.02});break;
+  case'key':/* soft keyboard clack, pitch varies per key */this.noise(.025,0,.035,2200);T(260+Math.random()*120,.02,0,{type:'triangle',vol:.05});break;
+  case'page':this.snoise(.14,{vol:.035,f:2600,to:5200,q:.8});break;
+  case'found':T(1319,.05,0,{type:'sine',vol:.06});T(1760,.09,.06,{type:'sine',vol:.06});break;}}}
 class ClawdEngine{
  constructor(canvas,o={}){this.cv=canvas;this.g=canvas.getContext('2d');this.size=o.size||'xs';this.lang=o.lang||'zh';this.manual=!!o.manual;this.reduced=!!o.reducedMotion;this.onStatus=o.onStatus||(()=>{});
   this.sfx=new Sfx();this.sfx.muted=!!o.mute;this.meterTick=!!o.meterTick;this.fidgetSound=!!o.fidgetSound;this.fidgets=o.fidgets!==false;this.snoreSound=o.snoreSound!==false;
@@ -77,7 +80,8 @@ class ClawdEngine{
  think(){this._wake();this.base='thinking';this._emit()}
  stream(){this._wake();if(this.base!=='streaming'){this.base='streaming';this._emit()}this.lastChunk=this.clock}
  tool(name='Tool'){this._wake();this.run.tools++;this.tools.push(String(name).slice(0,10));if(!this.anim||this.anim.name!=='tool')this._nextTool()}
- _nextTool(){const n=this.tools.shift();if(n==null)return;this.toolName=n;this.toolIdx=(this.toolIdx||0)+1;this._play('tool',2.2,{label:n,fromX:this.x,idx:this.toolIdx});this.sfx.play('box')}
+ _toolKind(n){n=String(n);return /^(edit|write|multiedit|notebook)/i.test(n)?'type':/^(read|view|cat|ls|glob)/i.test(n)?'read':/(grep|search|find)/i.test(n)?'grep':'box'}
+ _nextTool(){const n=this.tools.shift();if(n==null)return;this.toolName=n;const kind=this._toolKind(n);if(kind==='box')this.toolIdx=(this.toolIdx||0)+1;this._play('tool',2.2,{label:n,fromX:this.x,idx:this.toolIdx,kind});this.sfx.play({box:'box',type:'key',read:'page',grep:'blip'}[kind])}
  ask(){this._wake();this.base='ask';this.sfx.play('ask');this._emit();return new Promise(r=>this._askResolve=r)}
  decide(ok){if(this.base!=='ask')return;this.base='thinking';this._play(ok?'yes':'no',1.1);this.sfx.play(ok?'yes':'no');this._askResolve&&this._askResolve(!!ok);this._askResolve=null}
  error(){this._wake();this.run.errors++;this._play('error',2.6);this.sfx.play('fall');setTimeout(()=>{},0)}
@@ -116,7 +120,7 @@ class ClawdEngine{
   let moving=false;
   if(!this.anim&&!R){const range=Math.min(36,this.home-2);
    if(this.base==='thinking'){const v=7;this.x+=this.dir*v*dt;if(this.x<this.home-range){this.x=this.home-range;this.dir=1}if(this.x>this.home){this.x=this.home;this.dir=-1}moving=true;if(Math.floor(this.clock/1.6)!==this._vk){this._vk=Math.floor(this.clock/1.6);this.verb=(this.verb+1)%VERBS.zh.length}}
-   else if(this.base==='streaming'){const tgt=this.home-4+Math.round(Math.sin(this.clock*2.2)*3);const d=tgt-this.x;this.x+=clamp(d,-10*dt,10*dt);moving=Math.abs(d)>.2}
+   else if(this.base==='streaming'){const d=this.home-this.x;this.x+=clamp(d,-12*dt,12*dt);moving=Math.abs(d)>.2}
    else{const d=this.home-this.x;if(Math.abs(d)>.1){this.x+=clamp(d,-12*dt,12*dt);moving=true;this.dir=d>0?1:-1}}}
   if(R&&!this.anim)this.x=this.home;
   if(moving){this.walkPh+=dt*(this.base==='streaming'?10:8)}
@@ -150,24 +154,43 @@ class ClawdEngine{
   if(o.glasses){for(let i=1;i<=10;i++)put(i,2,E);[2,3,4,7,8,9].forEach(i=>put(i,3,E));put(2,2,'#5a5a5a');put(7,2,'#5a5a5a')}
   if(o.blush){put(2,3,C.blush);put(9,3,C.blush)}
  }
+ /* laptop seen from behind: lid covers the lower body, claws tap over its top edge, code glyphs float up; returns a draw fn for the 'after' pass */
+ _laptop(x,y,sound){const k=Math.floor(this.clock*9);if(k!==this._lk){this._lk=k;if(sound)this.sfx.play('key');if(k%3===0){const G=['{','}',';','()','=>','</>','01','#'];(this.codeP=this.codeP||[]).push({t0:this.clock,x:2+Math.random()*8,s:G[Math.floor(Math.random()*G.length)],c:[C.code,C.gold,C.text][k%3===0&&Math.random()<.5?0:Math.random()<.5?1:2]})}}
+  this.codeP=(this.codeP||[]).filter(q=>this.clock-q.t0<1.1);const cp=this.codeP;
+  this._lap=1;return()=>{const g=this.g,F=y;
+   /* side view, to Clawd's left: keyboard deck + base, lid tilted back with a glowing inner face */
+   this.px(x-9,F+7,C.lidD,9,1);this.px(x-8,F+6,C.lid,7,1);for(let i=0;i<3;i++)if((i+k)%3)this.px(x-6+i*2,F+6,C.lidD);
+   const LID=[[-9,6],[-9,5],[-10,4],[-10,3],[-11,2],[-11,1]];LID.forEach(([i,j])=>{this.px(x+i,F+j,C.lidD);this.px(x+i-1,F+j,C.lidD)});
+   const gl=.7+.3*Math.sin(this.clock*7);g.globalAlpha=gl;LID.slice(0,5).forEach(([i,j])=>this.px(x+i+1,F+j,C.lens));g.globalAlpha=1;
+   /* the claw reaching the keys, tapping */
+   const up=k%2;this.px(x-1,F+3,C.body);this.px(x-2,F+4,C.body);this.px(x-3,F+4+(up?0:1),C.body);this.px(x-4,F+(up?4:5),C.body);
+   for(const q of cp){const tt=(this.clock-q.t0)/1.1;g.globalAlpha=Math.max(0,1-tt*tt);this.text(q.s,x-8+q.x*.4,F-tt*9,q.c,2,'center',700);g.globalAlpha=1}}}
  render(){const g=this.g,S=this.S;g.setTransform(this.dpr,0,0,this.dpr,0,0);g.clearRect(0,0,this.Wc*S,this.Hc*S);g.imageSmoothingEnabled=false;
   const F=this.Hc-8;let x=this.x,y=F,o={legs:'stand'};const a=this.anim,p=a?a.t/a.dur:0;const ph=Math.floor(this.walkPh)%2;
-  const blink=(this.clock%3.6)<.12;
+  const blink=(this.clock%3.6)<.12;let after=null;this._lap=0;
   const fat=this.ctx>=.95?2:this.ctx>=.7?1:0;o.fat=fat;
   // base pose
   if(this.sleeping){o.eyes='closed';o.legs='tuck';y=F+1;const z=Math.floor(this.clock*1.5)%4;for(let k=0;k<z;k++)this.text(k?'Z':'z',x-2-k*2.6,y-1-k*2.2,C.text,2.2+k*.6,'right')}
   else if(this.base==='typing'){o.look=-1;o.eyes=blink?'none':'open';if(Math.floor(this.clock*4)%6===0)y=F-0}
   else if(this.base==='thinking'){o.legs=this.moving?(ph?'a':'b'):'stand';o.look=this.dir<0?-1:0;const v=VERBS[this.lang][this.verb%VERBS[this.lang].length];const dots='.'.repeat(1+Math.floor(this.clock*3)%3);if(!a)this.text(v+dots,x+6,F-4,C.text,2.4,'center',600);if(this.thinkT>25){const dy=Math.floor(this.clock*3)%4;this.px(x+12,y-1+dy,C.sweat);this.px(x+12,y-2+dy,C.sweat)}}
-  else if(this.base==='streaming'){o.legs=this.moving?(ph?'a':'b'):'stand';y=F-(Math.floor(this.walkPh*2)%2?0:0);o.eyes=blink?'none':'open'}
+  else if(this.base==='streaming'){o.legs=this.moving?(ph?'a':'b'):'stand';o.eyes=blink?'none':'open';o.look=-1;if(!this.moving)after=this._laptop(Math.round(x),y,true)}
   else if(this.base==='ask'){o.armsUp=true;o.eyes=blink?'none':'wide';const t=this.label('ask'),sx=x+6;const w=this.text(t,-999,-999,C.ink,2.6);const bw=Math.max(Math.ceil(w)+4,13),bx=Math.round(sx-bw/2+.5),by=y-10+Math.round(Math.sin(this.clock*4)*.4);this.px(bx,by,C.sign,bw,6);const pl=y-1-(by+6);this.px(x,by+6,C.post,1,pl);this.px(x+11,by+6,C.post,1,pl);this.text(t,sx,by+4.4,C.ink,2.6,'center')}
   else if(this.base==='limit'){o.eyes='x';o.legs='tuck';y=F+2;const cd=this.countdown();this.text(cd,x+6,y-3,C.text,2.4,'center',600);const z=Math.floor(this.clock*1.2)%3;for(let k=0;k<=z;k++)this.text('z',x-2-k*2,y-4-k*2,C.text,2+k*.5,'right')}
   else{o.eyes=blink?'none':'open';o.legs=this.moving?(ph?'a':'b'):'stand';if(this.lookX!=null){const d=this.lookX-(x+6);o.look=Math.abs(d)>4?(d<0?-2:2):0}if(this.hovered){o.eyes='happy';o.blush=true}
    if(this.base==='idle'&&(this.night!=null?this.night:new Date(this.now()).getHours()<5)){const mx=x-6;this.px(mx,F+4,C.mug,4,4);this.px(mx+4,F+5,C.mug,1,1);this.px(mx+5,F+5,C.mug,1,2);this.px(mx+4,F+6,C.mug,1,1);this.px(mx,F+4,C.coffee,4,1);const st=(this.clock*1.2)%1;this.px(mx+1+Math.round(Math.sin(this.clock*5)),F+2-Math.round(st*3),C.steam);if(Math.floor(this.clock/3)%3===1)o.eyes='closed'}if(!this.moving&&Math.floor(this.clock/2.2)%3===2)o.legs=Math.floor(this.clock*3)%2?'a':'stand'}
   // transient overrides
-  let after=null;
   if(a){const n=a.name;o.eyes=o.eyes==='none'?'open':o.eyes;
    if(n==='send'){y=F-Math.round(Math.sin(p*Math.PI)*5);o.armsUp=p<.6;o.eyes='wide';o.legs='a'}
-   if(n==='tool'){const t=a.t,go=.9,back=.9,hold=a.dur-go-back;let xx;if(t<go)xx=a.fromX+ease(t/go)*(this.Wc+14-a.fromX);else if(t<go+hold)xx=this.Wc+14;else xx=this.Wc+14-ease((t-go-hold)/back)*(this.Wc+14-this.home);x=xx;o.legs=Math.floor(t*12)%2?'a':'b';o.armsUp=true;
+   if(n==='tool'&&a.kind==='type'){o.eyes='open';o.look=-1;const f=this._laptop(Math.round(x),y,true);const xx=x,yy=y;after=()=>{f();this.text(a.label,xx+6,yy-2,C.text,2.2,'center',600)}}
+   if(n==='tool'&&a.kind==='read'){const fl=Math.floor(a.t/.7);o.look=Math.floor(a.t*2.5)%2?1:-1;o.eyes=blink?'none':'open';if(fl!==a.k){a.k=fl;if(fl)this.sfx.play('page')}const ft=(a.t%.7)/.18,xx=Math.round(x),yy=y;
+     after=()=>{const by=yy+4;this.px(xx-1,by+3,C.cover,14,1);this.px(xx,by,C.paper,5,3);this.px(xx+7,by,C.paper,5,3);this.px(xx+5,by+1,C.paperL,2,2);this.px(xx+5,by,C.paper,2,1);
+      for(let r=0;r<2;r++){this.px(xx+1,by+r+1-(r?0:0),C.paperL,3,1);this.px(xx+8,by+r+1,C.paperL,3,1)}
+      if(ft<1){const px_=Math.round(xx+10-ft*9);this.px(px_,by-1,C.paper,2,3)}
+      this.text(a.label,xx+6,yy-2,C.text,2.2,'center',600)}}
+   if(n==='tool'&&a.kind==='grep'){const sw=Math.sin(a.t*2.6);x=this.home-5+Math.round(sw*5);o.legs=Math.floor(a.t*8)%2?'a':'b';const dir=Math.cos(a.t*2.6)>0?1:-1;if(dir!==a.d){a.d=dir;this.sfx.play('blip')}o.look=dir>0?1:-1;const hit=a.t>a.dur-.6;if(hit&&!a.f){a.f=1;this.sfx.play('found')}if(hit){x=this.home;o.legs='stand';o.look=0}
+     const xx=Math.round(x),yy=y;after=()=>{const g=this.g,lx=xx+6,ly=yy-1;this.px(lx+1,ly,C.lid,3,1);this.px(lx+1,ly+4,C.lid,3,1);this.px(lx,ly+1,C.lid,1,3);this.px(lx+4,ly+1,C.lid,1,3);g.globalAlpha=.75;this.px(lx+1,ly+1,C.lens,3,3);g.globalAlpha=1;this.px(lx+2+(o.look>0?0:-1)+1,ly+2,C.ink,1,2);this.px(lx+1+(o.look>0?1:0),ly+2,C.ink,1,2);this.px(lx+4,ly+5,C.post);this.px(lx+5,ly+6,C.post);
+      if(hit){if(Math.floor(a.t*8)%2)this.text('!',xx+6,yy-3,C.gold,3.4,'center',800)}else this.text(a.label,xx+6,yy-3,C.text,2.2,'center',600)}}
+   if(n==='tool'&&(a.kind||'box')==='box'){const t=a.t,go=.9,back=.9,hold=a.dur-go-back;let xx;if(t<go)xx=a.fromX+ease(t/go)*(this.Wc+14-a.fromX);else if(t<go+hold)xx=this.Wc+14;else xx=this.Wc+14-ease((t-go-hold)/back)*(this.Wc+14-this.home);x=xx;o.legs=Math.floor(t*12)%2?'a':'b';o.armsUp=true;
      const stk=clamp((a.idx||0)-3,0,2);after=()=>{const bx=x+1,by=y-5;for(let k=0;k<=stk;k++){const wx=k?(Math.floor(this.clock*6+k)%2?k:-k)*.5:0,yy=by-k*4;this.px(bx+Math.round(wx),yy,C.box,10,4);this.px(bx+Math.round(wx),yy,C.boxD,10,1);this.px(bx+Math.round(wx)+4,yy,C.boxD,2,4)}this.text(a.label,x+6,by-1-stk*4,C.text,2.2,'center',600);if(stk){const dy=Math.floor(this.clock*4)%3;this.px(x+12,y+dy,C.sweat)}}}
    if(n==='yes'){y=F-Math.round(Math.abs(Math.sin(p*Math.PI*2))*2);o.eyes='happy'}
    if(n==='no'){o.eyes='down';y=F+1;o.legs='tuck'}
@@ -219,7 +242,7 @@ class ClawdEngine{
   if(!a&&fat>=1&&this.ctx>=.85&&!this.sleeping){const dy=Math.floor(this.clock*3)%4;this.px(x+12+fat,y-1+dy,C.sweat);this.px(x+12+fat,y-2+dy,C.sweat)}
   // meter
   if(this.meter&&(this.meter.live||(a&&a.name==='done'))&&!(a&&(a.name==='tool'||a.name==='cool'))){const m=this.meter;let s,col=C.green;if(m.mode==='tokens'&&m.tokens!=null)s=(m.tokens>=1000?(m.tokens/1000).toFixed(1)+'k':String(m.tokens))+' tok';else if(m.mode==='pct'&&m.pct!=null){s=Math.round(m.pct*100)+'%';col=m.pct>=.95?C.red:m.pct>=.8?C.yellow:C.green}else s='$'+(m.usd||0).toFixed(2);
-   const w=Math.ceil(this.text(s,-999,-999,col,2.6))+3,mx=Math.round(this.x)-w-3,my=F+2;this.px(mx,my,C.meter,w,5);this.px(mx,my+5,'#000',w,1);this.text(s,mx+1.5,my+3.9,col,2.6);this.meterBox={x:mx*this.S,y:my*this.S,w:w*this.S,h:6*this.S}}else this.meterBox=null;
+   const w=Math.ceil(this.text(s,-999,-999,col,2.6))+3,mx=Math.round(this.x)-w-3-(this._lap?15:0),my=F+2;this.px(mx,my,C.meter,w,5);this.px(mx,my+5,'#000',w,1);this.text(s,mx+1.5,my+3.9,col,2.6);this.meterBox={x:mx*this.S,y:my*this.S,w:w*this.S,h:6*this.S}}else this.meterBox=null;
   this.crab(Math.round(x),Math.round(y),o);if(after)after();
   this.crabBox={x:Math.round(x)*S,y:Math.round(y)*S,w:12*S,h:8*S}}
 }
